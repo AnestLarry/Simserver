@@ -1,10 +1,14 @@
 from flask import Flask
 from flask import request,Response
-import os , guess_Mimetype
+import os , guess_Mimetype , urllib.parse ,sys ,platform
 app = Flask(__name__)
+
+if platform.system() == "Linux":
+    os.chdir("/")
 
 @app.route('/<path:path>', methods=['GET'])
 def index(path):
+    path=urllib.parse.unquote(path)
     print(path)
     if os.path.exists(path):
         def generate():
@@ -28,5 +32,9 @@ class filedata:
         self.file.close()
         self.file=""
 
-if __name__ == '__main__':
+if len(sys.argv) >2:
+    app.run(sys.argv[0],sys.argv[1])
+elif len(sys.argv) >1:
+    app.run(sys.argv[0])
+else:
     app.run()
