@@ -1,15 +1,18 @@
 from flask import Flask
 from flask import request,Response
-import os , guess_Mimetype ,re
+import os , guess_Mimetype ,re ,sys
 app = Flask(__name__)
 
 allow_type=["jpg","txt","html","png","bmp","gif","htm","css","js","json"]
 
 @app.route('/<path>', methods=['GET'])
 def index(path):
-    print(path)
+    print(path,re.compile("\.[^\.\/\\\\]*").findall(path)[-1])
     if os.path.exists(path):
-        if re.compile("\.[^\.\/\\\\]*").findall(path)[-1] not in allow_type :
+        if re.compile("\.[^\.\/\\\\]*").findall(path)[-1][1:] in ["txt","html"]:
+            with open(path,"rb") as f:
+                return f.read()
+        if re.compile("\.[^\.\/\\\\]*").findall(path)[-1][1:] not in allow_type :
             return "Permission denied!"
         def generate():
             f=filedata(path)
@@ -17,7 +20,7 @@ def index(path):
             while data:
                 data = f.get(1024*10)
                 yield data
-        return Response(generate(),mimetype=guess_Mimetype.guess(path),headers={'Content-Type':guess_Mimetype.guess(path)})
+        return Response(generate(),headers={'Content-Type':guess_Mimetype.guess(path)})
     else:
         return "Error 404"
 
@@ -33,5 +36,9 @@ class filedata:
         self.file=""
 
 
-if __name__ == '__main__':
+if len(sys.argv) >2:
+    app.run(sys.argv[1],sys.argv[2])
+elif len(sys.argv) >1:
+    app.run(sys.argv[1])
+else:
     app.run()
