@@ -6,8 +6,8 @@ app = Flask(__name__)
 if platform.system() == "Linux":
     os.chdir("/")
 
-@app.route('/<path:path>', methods=['GET'])
-def index(path):
+@app.route('/download/<path:path>', methods=['GET'])
+def download(path):
     path=urllib.parse.unquote(path)
     print(path)
     if os.path.exists(path):
