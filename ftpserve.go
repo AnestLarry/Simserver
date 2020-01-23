@@ -22,15 +22,17 @@ func main() {
 		for _, v := range os.Args {
 			switch v {
 			case "h", "-h", "help":
-				fmt.Println(" h  - show this help\n v  - get version\n ls  - open ls function\n dls  - download with ls list(auto open ls function).")
+				fmt.Println(" h  - show this help\n v  - get version\n ls  - open ls function\n dls  - add download links with the ls function's list.")
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
 				os.Exit(0)
 			case "ls", "-ls":
+				fmt.Println(" -  ls mode on.")
 				p = true
 				ls_open = true
 			case "dls", "-dls":
+				fmt.Println(" -  dls mode on.")
 				p = true
 				dls_open = true
 			}
@@ -44,6 +46,7 @@ func main() {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "(${method}, ${status}), time = ${time_rfc3339}, uri = [${uri}], remote ip = <${remote_ip}>\n",
 	}))
+	e.HideBanner = true
 	e.GET("/", index)
 	e.GET("/download/*", getfile)
 	e.GET("/ls/*", getls)
@@ -66,48 +69,42 @@ func getfile(c echo.Context) error {
 
 func getls(c echo.Context) error {
 	if ls_open {
-		files := getls_getfiles(c.Request().URL.Path[4:])
-		return c.String(http.StatusOK, files)
-	} else {
-		return c.String(http.StatusNotImplemented, "Error 501")
-	}
-}
-
-func getls_getfiles(path string) string {
-	skillfolder := path
-	result := "Items:\n\n"
-	fs, ds := " File:\n", " Dir:\n"
-	files, _ := ioutil.ReadDir(skillfolder)
-	for _, file := range files {
-		if file.IsDir() {
-			ds += "  " + file.Name() + "\n"
-		} else {
-			fs += "  " + file.Name() + "\n"
-		}
-	}
-	result = result + ds + "\n" + fs
-	return result
-}
-
-func getdls(c echo.Context) error {
-	if dls_open {
-		files := getdls_getfiles(c.Request().URL.Path[5:])
+		files := getfileslists(c.Request().URL.Path[4:])
 		return c.HTML(http.StatusOK, files)
 	} else {
 		return c.String(http.StatusNotImplemented, "Error 501")
 	}
 }
 
-func getdls_getfiles(path string) string {
+func getdls(c echo.Context) error {
+	if dls_open {
+		files := getfileslists(c.Request().URL.Path[5:])
+		return c.HTML(http.StatusOK, files)
+	} else {
+		return c.String(http.StatusNotImplemented, "Error 501")
+	}
+}
+
+func getfileslists(path string) string {
 	skillfolder := path
 	result := "<html>Items:<br><br>"
 	fs, ds := "<p> File:<br>", "<p> Dir:\n"
 	files, _ := ioutil.ReadDir(skillfolder)
-	for _, file := range files {
-		if file.IsDir() {
-			ds += "  " + file.Name() + "<br>"
-		} else {
-			fs += "  <a href='/download/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
+	if ls_open && !dls_open {
+		for _, file := range files {
+			if file.IsDir() {
+				ds += "  " + file.Name() + "<br>"
+			} else {
+				fs += "  " + file.Name() + "<br>"
+			}
+		}
+	} else {
+		for _, file := range files {
+			if file.IsDir() {
+				ds += "  " + file.Name() + "<br>"
+			} else {
+				fs += "  <a href='/download/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
+			}
 		}
 	}
 	ds += "</p>"
