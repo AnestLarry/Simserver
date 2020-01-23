@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 var (
@@ -40,6 +41,9 @@ func main() {
 		}
 	}
 	e := echo.New()
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "(${method}, ${status}), time = ${time_rfc3339}, uri = [${uri}], remote ip = <${remote_ip}>\n",
+	}))
 	e.GET("/", index)
 	e.GET("/download/*", getfile)
 	e.GET("/ls/*", getls)
@@ -57,15 +61,12 @@ func index(c echo.Context) error {
 }
 
 func getfile(c echo.Context) error {
-	println(c.Request().URL.Path[10:])
 	return c.File(c.Request().URL.Path[10:])
 }
 
 func getls(c echo.Context) error {
 	if ls_open {
 		files := getls_getfiles(c.Request().URL.Path[4:])
-
-		fmt.Println(c.Request().URL.Path[4:])
 		return c.String(http.StatusOK, files)
 	} else {
 		return c.String(http.StatusNotImplemented, "Error 501")
@@ -91,7 +92,6 @@ func getls_getfiles(path string) string {
 func getdls(c echo.Context) error {
 	if dls_open {
 		files := getdls_getfiles(c.Request().URL.Path[5:])
-		fmt.Println(c.Request().URL.Path[5:])
 		return c.HTML(http.StatusOK, files)
 	} else {
 		return c.String(http.StatusNotImplemented, "Error 501")
