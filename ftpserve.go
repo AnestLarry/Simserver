@@ -13,7 +13,7 @@ import (
 var (
 	ls_open  = false
 	dls_open = false
-	Version  = "Jan 23,2020 Thu."
+	Version  = "Jan 24,2020 Fri."
 )
 
 func main() {
@@ -86,6 +86,9 @@ func getdls(c echo.Context) error {
 }
 
 func getfileslists(path string) string {
+	if path[len(path)-1] != '/' {
+		path += "/"
+	}
 	skillfolder := path
 	result := "<html>Items:<br><br>"
 	fs, ds := "<p> File:<br>", "<p> Dir:\n"
