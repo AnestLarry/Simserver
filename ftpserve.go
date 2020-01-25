@@ -18,11 +18,22 @@ var (
 
 func main() {
 	p := false
+	ip := "0.0.0.0"
+	port := "5000"
 	if len(os.Args) > 1 {
-		for _, v := range os.Args {
-			switch v {
+		for i := 0; i < len(os.Args); i++ {
+			switch os.Args[i] {
 			case "h", "-h", "help":
-				fmt.Println(" h  - show this help\n v  - get version\n ls  - open ls function\n dls  - add download links with the ls function's list.")
+				fmt.Println(
+					"Tips:\n" +
+						" h  - show this help\n" +
+						" v  - get version\n" +
+						"Mode:\n" +
+						" ls  - open ls function\n" +
+						" dls  - add download links with the ls function's list\n" +
+						"Args:\n" +
+						" p / port  - use the port\n" +
+						" ip  - use the ip.")
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
@@ -35,6 +46,14 @@ func main() {
 				fmt.Println(" -  dls mode on.")
 				p = true
 				dls_open = true
+			case "ip", "-ip":
+				p = true
+				i++
+				ip = os.Args[i]
+			case "p", "-p", "port", "-port":
+				p = true
+				i++
+				port = os.Args[i]
 			}
 		}
 		if !p {
@@ -52,7 +71,7 @@ func main() {
 	e.GET("/ls/*", getls)
 	e.GET("/dls/*", getdls)
 	e.GET("/version", getversion)
-	e.Logger.Fatal(e.Start(":5000"))
+	e.Logger.Fatal(e.Start(ip + ":" + port))
 }
 
 func getversion(c echo.Context) error {
@@ -91,7 +110,7 @@ func getfileslists(path string) string {
 	}
 	skillfolder := path
 	result := "<html>Items:<br><br>"
-	fs, ds := "<p> File:<br>", "<p> Dir:\n"
+	fs, ds := "<p> File:<br>", "<p> Dir:<br>"
 	files, _ := ioutil.ReadDir(skillfolder)
 	if ls_open && !dls_open {
 		for _, file := range files {
@@ -115,14 +134,3 @@ func getfileslists(path string) string {
 	result = result + ds + "<br>" + fs + "</html>"
 	return result
 }
-
-// func Exists(path string) bool {
-// 	_, err := os.Stat(path)
-// 	if err != nil {
-// 		if os.IsExist(err) {
-// 			return true
-// 		}
-// 		return false
-// 	}
-// 	return true
-// }
