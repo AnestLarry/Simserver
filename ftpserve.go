@@ -36,7 +36,9 @@ func main() {
 						" upload  - allow user upload files to host\n" +
 						"Args:\n" +
 						" p / port  - use the port\n" +
-						" ip  - use the ip.")
+						" ip  - use the ip.\n" +
+						"Task:\n" +
+						" RSUN  - reset files which in upload folder to origin's name\n")
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
@@ -62,6 +64,28 @@ func main() {
 					}
 				} else {
 					os.Mkdir("./upload", 0644)
+				}
+			case "RSUN", "-RSUN":
+				if libs.Exists("./upload") {
+					if libs.IsDir("./upload") {
+						fmt.Println("WARMING :  It may be fail or rewrite the same name file.\nkeyin \"y\" to continue or other to exit")
+						{
+							temp := ""
+							fmt.Scanf("%s", &temp)
+							if temp != "y" {
+								os.Exit(0)
+							}
+						}
+						files, _ := ioutil.ReadDir("./upload")
+						for _, file := range files {
+							temp := len(file.Name()) - 4
+							if !file.IsDir() && file.Name()[temp:] == ".dat" {
+								os.Rename(fmt.Sprintf("./upload/%s", file.Name()), fmt.Sprintf("./upload/%s", file.Name()[:temp]))
+								fmt.Println("[", file.Name(), "] reset to [", file.Name()[:temp], "]")
+							}
+						}
+						os.Exit(0)
+					}
 				}
 			default:
 				fmt.Println("Do you mean \"-h\" ?")
