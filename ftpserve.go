@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
+	"libs"
 	"net/http"
 	"os"
 
@@ -11,17 +13,17 @@ import (
 )
 
 var (
-	ls_open  = false
-	dls_open = false
-	Version  = "Jan 24,2020 Fri."
+	ls_open     = false
+	dls_open    = false
+	upload_open = false
+	Version     = "Feb 15,2020 Sat."
 )
 
 func main() {
-	p := false
 	ip := "0.0.0.0"
 	port := "5000"
 	if len(os.Args) > 1 {
-		for i := 0; i < len(os.Args); i++ {
+		for i := 1; i < len(os.Args); i++ {
 			switch os.Args[i] {
 			case "h", "-h", "help":
 				fmt.Println(
@@ -31,6 +33,7 @@ func main() {
 						"Mode:\n" +
 						" ls  - open ls function\n" +
 						" dls  - add download links with the ls function's list\n" +
+						" upload  - allow user upload files to host\n" +
 						"Args:\n" +
 						" p / port  - use the port\n" +
 						" ip  - use the ip.")
@@ -40,25 +43,30 @@ func main() {
 				os.Exit(0)
 			case "ls", "-ls":
 				fmt.Println(" -  ls mode on.")
-				p = true
 				ls_open = true
 			case "dls", "-dls":
 				fmt.Println(" -  dls mode on.")
-				p = true
 				dls_open = true
 			case "ip", "-ip":
-				p = true
 				i++
 				ip = os.Args[i]
 			case "p", "-p", "port", "-port":
-				p = true
 				i++
 				port = os.Args[i]
+			case "upload", "-upload":
+				upload_open = true
+				if libs.Exists("./upload") {
+					if !libs.IsDir("./upload") {
+						fmt.Println("upload is not a folder!")
+						os.Exit(0)
+					}
+				} else {
+					os.Mkdir("./upload", 0644)
+				}
+			default:
+				fmt.Println("Do you mean \"-h\" ?")
+				os.Exit(0)
 			}
-		}
-		if !p {
-			fmt.Println("Do you mean \"-h\" ?")
-			os.Exit(0)
 		}
 	}
 	e := echo.New()
@@ -71,6 +79,8 @@ func main() {
 	e.GET("/ls/*", getls)
 	e.GET("/dls/*", getdls)
 	e.GET("/version", getversion)
+	e.GET("/upload", uploadpage)
+	e.POST("/upload", upload)
 	e.Logger.Fatal(e.Start(ip + ":" + port))
 }
 
@@ -80,6 +90,13 @@ func getversion(c echo.Context) error {
 
 func index(c echo.Context) error {
 	return c.String(http.StatusOK, "It's the file download server.\nYou can use the path to download the file on the machine.")
+}
+
+func uploadpage(c echo.Context) error {
+	return c.HTML(http.StatusOK, `<form action="/upload" method="post" enctype="multipart/form-data">
+    Files: <input type="file" name="files" multiple><br><br>
+    <input type="submit" value="Submit">
+</form>`)
 }
 
 func getfile(c echo.Context) error {
@@ -133,4 +150,38 @@ func getfileslists(path string) string {
 	fs += "</p>"
 	result = result + ds + "<br>" + fs + "</html>"
 	return result
+}
+
+func upload(c echo.Context) error {
+	if upload_open {
+		form, err := c.MultipartForm()
+		if err != nil {
+			return err
+		}
+		files := form.File["files"]
+
+		for _, file := range files {
+			// Source
+			src, err := file.Open()
+			if err != nil {
+				return err
+			}
+			defer src.Close()
+
+			// Destination
+			dst, err := os.Create(fmt.Sprintf("./upload/%s.dat", file.Filename))
+			if err != nil {
+				return err
+			}
+			defer dst.Close()
+
+			// Copy
+			if _, err = io.Copy(dst, src); err != nil {
+				return err
+			}
+		}
+		return c.String(http.StatusOK, "OK")
+	} else {
+		return c.String(http.StatusNotImplemented, "Error 501")
+	}
 }
