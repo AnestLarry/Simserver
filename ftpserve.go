@@ -16,7 +16,7 @@ var (
 	ls_open     = false
 	dls_open    = false
 	upload_open = false
-	Version     = "Feb 15,2020 Sat."
+	Version     = "May 15,2020 Fri."
 )
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 						" p / port  - use the port\n" +
 						" ip  - use the ip.\n" +
 						"Task:\n" +
-						" RSUN  - reset files which in upload folder to origin's name\n")
+						" RSUN  - reset files which in upload folder to origin's name")
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
@@ -57,8 +57,8 @@ func main() {
 				port = os.Args[i]
 			case "upload", "-upload":
 				upload_open = true
-				if libs.Exists("./upload") {
-					if !libs.IsDir("./upload") {
+				if libs.LibsXExists("./upload") {
+					if !libs.LibsXIsDir("./upload") {
 						fmt.Println("upload is not a folder!")
 						os.Exit(0)
 					}
@@ -66,8 +66,8 @@ func main() {
 					os.Mkdir("./upload", 0644)
 				}
 			case "RSUN", "-RSUN":
-				if libs.Exists("./upload") {
-					if libs.IsDir("./upload") {
+				if libs.LibsXExists("./upload") {
+					if libs.LibsXIsDir("./upload") {
 						fmt.Println("WARMING :  It may be fail or rewrite the same name file.\nkeyin \"y\" to continue or other to exit")
 						{
 							temp := ""
@@ -129,7 +129,7 @@ func getfile(c echo.Context) error {
 
 func getls(c echo.Context) error {
 	if ls_open {
-		files := getfileslists(c.Request().URL.Path[4:])
+		files := getfileslists(c.Request().URL.Path[4:], c)
 		return c.HTML(http.StatusOK, files)
 	} else {
 		return c.String(http.StatusNotImplemented, "Error 501")
@@ -138,14 +138,14 @@ func getls(c echo.Context) error {
 
 func getdls(c echo.Context) error {
 	if dls_open {
-		files := getfileslists(c.Request().URL.Path[5:])
+		files := getfileslists(c.Request().URL.Path[5:], c)
 		return c.HTML(http.StatusOK, files)
 	} else {
 		return c.String(http.StatusNotImplemented, "Error 501")
 	}
 }
 
-func getfileslists(path string) string {
+func getfileslists(path string, c echo.Context) string {
 	if path[len(path)-1] != '/' {
 		path += "/"
 	}
@@ -164,7 +164,7 @@ func getfileslists(path string) string {
 	} else {
 		for _, file := range files {
 			if file.IsDir() {
-				ds += "  " + file.Name() + "<br>"
+				ds += "  <a href='" + c.Request().URL.Path + "/" + file.Name() + "'>" + file.Name() + "</a><br>"
 			} else {
 				fs += "  <a href='/download/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
 			}
