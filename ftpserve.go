@@ -2,21 +2,19 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"libs"
-	"net/http"
 	"os"
+	"time"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 var (
 	ls_open     = false
 	dls_open    = false
 	upload_open = false
-	Version     = "May 15,2020 Fri."
+	Version     = "Aug 19,2020 We."
 )
 
 func main() {
@@ -56,9 +54,10 @@ func main() {
 				i++
 				port = os.Args[i]
 			case "upload", "-upload":
+				fmt.Println(" -  upload mode on.")
 				upload_open = true
-				if libs.LibsXExists("./upload") {
-					if !libs.LibsXIsDir("./upload") {
+				if Libs.LibsXExists("./upload") {
+					if !Libs.LibsXIsDir("./upload") {
 						fmt.Println("upload is not a folder!")
 						os.Exit(0)
 					}
@@ -66,8 +65,8 @@ func main() {
 					os.Mkdir("./upload", 0644)
 				}
 			case "RSUN", "-RSUN":
-				if libs.LibsXExists("./upload") {
-					if libs.LibsXIsDir("./upload") {
+				if Libs.LibsXExists("./upload") {
+					if Libs.LibsXIsDir("./upload") {
 						fmt.Println("WARMING :  It may be fail or rewrite the same name file.\nkeyin \"y\" to continue or other to exit")
 						{
 							temp := ""
@@ -93,66 +92,107 @@ func main() {
 			}
 		}
 	}
-	e := echo.New()
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "(${method}, ${status}), time = ${time_rfc3339}, uri = [${uri}], remote ip = <${remote_ip}>\n",
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		return fmt.Sprintf("[%s %d %s] - {%s} < %s > \"%s %s \"%s\" %s\"\n",
+			param.Method,
+			param.StatusCode,
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC1123),
+			param.Path,
+			param.Request.Proto,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
 	}))
-	e.HideBanner = true
-	e.GET("/", index)
-	e.GET("/download/*", getfile)
-	e.GET("/ls/*", getls)
-	e.GET("/dls/*", getdls)
-	e.GET("/version", getversion)
-	e.GET("/upload", uploadpage)
-	e.POST("/upload", upload)
-	e.Logger.Fatal(e.Start(ip + ":" + port))
-}
-
-func getversion(c echo.Context) error {
-	return c.String(http.StatusOK, Version)
-}
-
-func index(c echo.Context) error {
-	return c.String(http.StatusOK, "It's the file download server.\nYou can use the path to download the file on the machine.")
-}
-
-func uploadpage(c echo.Context) error {
-	return c.HTML(http.StatusOK, `<form action="/upload" method="post" enctype="multipart/form-data">
+	r.Use(gin.Recovery())
+	r.GET("/version", func(c *gin.Context) {
+		c.JSON(200, gin.H{"version": Version})
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "It's the file download server." +
+			"You can use the path to download the file on the machine."})
+	})
+	r.GET("/upload", func(c *gin.Context) {
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.String(200, `<form action="/upload" method="post" enctype="multipart/form-data">
     Files: <input type="file" name="files" multiple><br><br>
     <input type="submit" value="Submit">
 </form>`)
+	})
+	r.POST("/upload", func(c *gin.Context) {
+		if upload_open {
+			form, err := c.MultipartForm()
+			if err != nil {
+				c.JSON(500, gin.H{"message": "got file error."})
+			}
+			files := form.File["files"]
+
+			for _, file := range files {
+				// Source
+				//src, err := file.Open()
+				//if err != nil {
+				//	return err
+				//}
+				//defer src.Close()
+				//
+				//// Destination
+				//dst, err := os.Create(fmt.Sprintf("./upload/%s.dat", file.Filename))
+				//if err != nil {
+				//	return err
+				//}
+				//defer dst.Close()
+				//
+				//// Copy
+				//if _, err = io.Copy(dst, src); err != nil {
+				//	return err
+				//}
+				if !Libs.LibsXExists("upload") {
+					os.Mkdir("upload", 0644)
+				}
+				c.SaveUploadedFile(file, fmt.Sprintf("upload/%s.dat", file.Filename))
+			}
+			c.JSON(200, gin.H{"message": "OK"})
+		} else {
+			c.JSON(501, gin.H{"message": "The server is not supported \"upload\""})
+		}
+	})
+	r.GET("/download/*path", func(c *gin.Context) {
+		c.File(c.Param("path")[1:])
+	})
+	r.GET("/ls/*path", func(c *gin.Context) {
+		if ls_open {
+			path := c.Param("path")[1:]
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			files := getFilesLists(path, c)
+			c.String(200, files)
+		} else {
+			c.JSON(501, gin.H{"message": "The server is not supported \"list files\""})
+		}
+	})
+	r.GET("/dls/*path", func(c *gin.Context) {
+		if dls_open {
+			path := c.Param("path")[1:]
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			files := getFilesLists(path, c)
+			c.String(200, files)
+		} else {
+			c.JSON(501, gin.H{"message": "The server is not supported \"list download files\""})
+		}
+	})
+	r.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
-func getfile(c echo.Context) error {
-	return c.File(c.Request().URL.Path[10:])
-}
-
-func getls(c echo.Context) error {
-	if ls_open {
-		files := getfileslists(c.Request().URL.Path[4:], c)
-		return c.HTML(http.StatusOK, files)
-	} else {
-		return c.String(http.StatusNotImplemented, "Error 501")
-	}
-}
-
-func getdls(c echo.Context) error {
-	if dls_open {
-		files := getfileslists(c.Request().URL.Path[5:], c)
-		return c.HTML(http.StatusOK, files)
-	} else {
-		return c.String(http.StatusNotImplemented, "Error 501")
-	}
-}
-
-func getfileslists(path string, c echo.Context) string {
+func getFilesLists(path string, c *gin.Context) string {
 	if path[len(path)-1] != '/' {
 		path += "/"
 	}
-	skillfolder := path
+	skillFolder := path
 	result := "<html>Items:<br><br>"
 	fs, ds := "<p> File:<br>", "<p> Dir:<br>"
-	files, _ := ioutil.ReadDir(skillfolder)
+	files, _ := ioutil.ReadDir(skillFolder)
 	if ls_open && !dls_open {
 		for _, file := range files {
 			if file.IsDir() {
@@ -164,7 +204,7 @@ func getfileslists(path string, c echo.Context) string {
 	} else {
 		for _, file := range files {
 			if file.IsDir() {
-				ds += "  <a href='" + c.Request().URL.Path + "/" + file.Name() + "'>" + file.Name() + "</a><br>"
+				ds += "  <a href='" + c.Request.URL.Path + "/" + file.Name() + "'>" + file.Name() + "</a><br>"
 			} else {
 				fs += "  <a href='/download/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
 			}
@@ -174,38 +214,4 @@ func getfileslists(path string, c echo.Context) string {
 	fs += "</p>"
 	result = result + ds + "<br>" + fs + "</html>"
 	return result
-}
-
-func upload(c echo.Context) error {
-	if upload_open {
-		form, err := c.MultipartForm()
-		if err != nil {
-			return err
-		}
-		files := form.File["files"]
-
-		for _, file := range files {
-			// Source
-			src, err := file.Open()
-			if err != nil {
-				return err
-			}
-			defer src.Close()
-
-			// Destination
-			dst, err := os.Create(fmt.Sprintf("./upload/%s.dat", file.Filename))
-			if err != nil {
-				return err
-			}
-			defer dst.Close()
-
-			// Copy
-			if _, err = io.Copy(dst, src); err != nil {
-				return err
-			}
-		}
-		return c.String(http.StatusOK, "OK")
-	} else {
-		return c.String(http.StatusNotImplemented, "Error 501")
-	}
 }
