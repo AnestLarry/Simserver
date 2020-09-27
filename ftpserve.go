@@ -1,10 +1,14 @@
 package main
 
 import (
+	"archive/zip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"libs"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +18,8 @@ var (
 	ls_open     = false
 	dls_open    = false
 	upload_open = false
-	Version     = "Aug 19,2020 We."
+	zip_open    = false
+	Version     = "Sep 27,2020 Su."
 )
 
 func main() {
@@ -32,6 +37,7 @@ func main() {
 						" ls  - open ls function\n" +
 						" dls  - add download links with the ls function's list\n" +
 						" upload  - allow user upload files to host\n" +
+						" zip  - allow zip dir for download (DANGER!)\n" +
 						"Args:\n" +
 						" p / port  - use the port\n" +
 						" ip  - use the ip.\n" +
@@ -64,6 +70,9 @@ func main() {
 				} else {
 					os.Mkdir("./upload", 0644)
 				}
+			case "zip", "-zip":
+				fmt.Println(" -  zip mode on.")
+				zip_open = true
 			case "RSUN", "-RSUN":
 				if Libs.LibsXExists("./upload") {
 					if Libs.LibsXIsDir("./upload") {
@@ -87,7 +96,7 @@ func main() {
 					}
 				}
 			default:
-				fmt.Println("Do you mean \"-h\" ?")
+				fmt.Println("There is arg(s) cannot parse. Do you need \"-h\" ?")
 				os.Exit(0)
 			}
 		}
@@ -131,24 +140,6 @@ func main() {
 			files := form.File["files"]
 
 			for _, file := range files {
-				// Source
-				//src, err := file.Open()
-				//if err != nil {
-				//	return err
-				//}
-				//defer src.Close()
-				//
-				//// Destination
-				//dst, err := os.Create(fmt.Sprintf("./upload/%s.dat", file.Filename))
-				//if err != nil {
-				//	return err
-				//}
-				//defer dst.Close()
-				//
-				//// Copy
-				//if _, err = io.Copy(dst, src); err != nil {
-				//	return err
-				//}
 				if !Libs.LibsXExists("upload") {
 					os.Mkdir("upload", 0644)
 				}
@@ -180,6 +171,36 @@ func main() {
 			c.String(200, files)
 		} else {
 			c.JSON(501, gin.H{"message": "The server is not supported \"list download files\""})
+		}
+	})
+	r.GET("/zip/*path", func(c *gin.Context) {
+		if zip_open {
+			c.Writer.Header().Set("Content-type", "application/octet-stream")
+			path := c.Param("path")[1:]
+			path = strings.ReplaceAll(path, "/", "\\")
+			c.Stream(func(w io.Writer) bool {
+				ar := zip.NewWriter(w)
+				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+					time.Now().Format("2006-01-02--15-04-05")))
+				filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
+					if f.IsDir() {
+						return nil
+					} else {
+						newPath := strings.ReplaceAll(p, path, "")
+						if newPath[0] == '\\' {
+							newPath = newPath[1:]
+						}
+						file, _ := os.Open(p)
+						f, _ := ar.Create(newPath)
+						io.Copy(f, file)
+					}
+					return nil
+				})
+				ar.Close()
+				return false
+			})
+		} else {
+			c.JSON(501, gin.H{"message": "The server is not supported."})
 		}
 	})
 	r.Run(fmt.Sprintf("%s:%s", ip, port))
