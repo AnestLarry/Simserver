@@ -104,7 +104,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		return fmt.Sprintf("[%s %d %s] - {%s} < %s > \"%s %s \"%s\" %s\"\n",
+		return fmt.Sprintf("[%s %d %s] \n{%s} < %s >\n\"%s %s \"%s\" %s\"\n\n",
 			param.Method,
 			param.StatusCode,
 			param.ClientIP,
