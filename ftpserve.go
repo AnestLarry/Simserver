@@ -1,11 +1,11 @@
 package main
 
 import (
+	"Libs/Libs"
 	"archive/zip"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"libs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -125,25 +125,33 @@ func main() {
 			"You can use the path to download the file on the machine."})
 	})
 	r.GET("/upload", func(c *gin.Context) {
-		c.Header("Content-Type", "text/html; charset=utf-8")
-		c.String(200, `<form action="/upload" method="post" enctype="multipart/form-data">
+		if upload_open {
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			c.String(200, `<form action="/upload" method="post" enctype="multipart/form-data">
     Files: <input type="file" name="files" multiple><br><br>
     <input type="submit" value="Submit">
 </form>`)
+		} else {
+			c.JSON(200, gin.H{"message": "The server is not supported \"upload\""})
+		}
 	})
+
 	r.POST("/upload", func(c *gin.Context) {
-		if upload_open {
+		if upload_open == true {
 			form, err := c.MultipartForm()
 			if err != nil {
 				c.JSON(500, gin.H{"message": "got file error."})
 			}
 			files := form.File["files"]
-
 			for _, file := range files {
 				if !Libs.LibsXExists("upload") {
 					os.Mkdir("upload", 0644)
 				}
-				c.SaveUploadedFile(file, fmt.Sprintf("upload/%s.dat", file.Filename))
+				folder := fmt.Sprintf("upload/from[%s]", c.ClientIP())
+				if !Libs.LibsXExists(folder) {
+					os.Mkdir(folder, 0644)
+				}
+				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s.dat", folder, file.Filename))
 			}
 			c.JSON(200, gin.H{"message": "OK"})
 		} else {
