@@ -19,7 +19,7 @@ var (
 	dls_open    = false
 	upload_open = false
 	zip_open    = false
-	Version     = "Sep 27,2020 Su."
+	Version     = "Mar 5,2021 Fr."
 )
 
 func main() {
@@ -124,97 +124,123 @@ func main() {
 		c.JSON(200, gin.H{"message": "It's the file download server." +
 			"You can use the path to download the file on the machine."})
 	})
-	r.GET("/upload", func(c *gin.Context) {
-		if upload_open {
-			c.Header("Content-Type", "text/html; charset=utf-8")
-			c.String(200, `<form action="/upload" method="post" enctype="multipart/form-data">
+	Uploader_routerGroup := r.Group("/upload")
+	Uploader_routerGroup.Use(upload_middleware())
+	Uploader_routerGroup.GET("/", func(c *gin.Context) {
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.String(200, `<form action="/upload/" method="post" enctype="multipart/form-data">
     Files: <input type="file" name="files" multiple><br><br>
     <input type="submit" value="Submit">
 </form>`)
-		} else {
-			c.JSON(200, gin.H{"message": "The server is not supported \"upload\""})
+	})
+	Uploader_routerGroup.POST("/", func(c *gin.Context) {
+		form, err := c.MultipartForm()
+		if err != nil {
+			c.JSON(500, gin.H{"message": "got file error."})
 		}
+		files := form.File["files"]
+		for _, file := range files {
+			if !Libs.LibsXExists("upload") {
+				os.Mkdir("upload", 0644)
+			}
+			folder := fmt.Sprintf("upload/from[%s]", c.ClientIP())
+			if !Libs.LibsXExists(folder) {
+				os.Mkdir(folder, 0644)
+			}
+			c.SaveUploadedFile(file, fmt.Sprintf("%s/%s.dat", folder, file.Filename))
+		}
+		c.JSON(200, gin.H{"message": "OK"})
+
 	})
 
-	r.POST("/upload", func(c *gin.Context) {
-		if upload_open == true {
-			form, err := c.MultipartForm()
-			if err != nil {
-				c.JSON(500, gin.H{"message": "got file error."})
-			}
-			files := form.File["files"]
-			for _, file := range files {
-				if !Libs.LibsXExists("upload") {
-					os.Mkdir("upload", 0644)
-				}
-				folder := fmt.Sprintf("upload/from[%s]", c.ClientIP())
-				if !Libs.LibsXExists(folder) {
-					os.Mkdir(folder, 0644)
-				}
-				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s.dat", folder, file.Filename))
-			}
-			c.JSON(200, gin.H{"message": "OK"})
+	Downloader_routerGroup := r.Group("/dl")
+	Downloader_routerGroup.Use(download_middleware())
+	Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
+		fileName := c.Param("path")[1:]
+		if Libs.LibsXIsFile(fileName) {
+			c.File(fileName)
 		} else {
-			c.JSON(501, gin.H{"message": "The server is not supported \"upload\""})
+			c.JSON(404, gin.H{"message": "Not file found."})
 		}
 	})
-	r.GET("/download/*path", func(c *gin.Context) {
-		c.File(c.Param("path")[1:])
+	Downloader_routerGroup.GET("/ls/*path", func(c *gin.Context) {
+		path := c.Param("path")[1:]
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		files := getFilesLists(path, c, "ls")
+		c.String(200, files)
 	})
-	r.GET("/ls/*path", func(c *gin.Context) {
-		if ls_open {
-			path := c.Param("path")[1:]
-			c.Header("Content-Type", "text/html; charset=utf-8")
-			files := getFilesLists(path, c)
-			c.String(200, files)
-		} else {
-			c.JSON(501, gin.H{"message": "The server is not supported \"list files\""})
-		}
+	Downloader_routerGroup.GET("/dls/*path", func(c *gin.Context) {
+		path := c.Param("path")[1:]
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		files := getFilesLists(path, c, "dls")
+		c.String(200, files)
 	})
-	r.GET("/dls/*path", func(c *gin.Context) {
-		if dls_open {
-			path := c.Param("path")[1:]
-			c.Header("Content-Type", "text/html; charset=utf-8")
-			files := getFilesLists(path, c)
-			c.String(200, files)
-		} else {
-			c.JSON(501, gin.H{"message": "The server is not supported \"list download files\""})
-		}
-	})
-	r.GET("/zip/*path", func(c *gin.Context) {
-		if zip_open {
-			c.Writer.Header().Set("Content-type", "application/octet-stream")
-			path := c.Param("path")[1:]
-			path = strings.ReplaceAll(path, "/", "\\")
-			c.Stream(func(w io.Writer) bool {
-				ar := zip.NewWriter(w)
-				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-					time.Now().Format("2006-01-02--15-04-05")))
-				filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
-					if f.IsDir() {
-						return nil
-					} else {
-						newPath := strings.ReplaceAll(p, path, "")
-						if newPath[0] == '\\' {
-							newPath = newPath[1:]
-						}
-						file, _ := os.Open(p)
-						f, _ := ar.Create(newPath)
-						io.Copy(f, file)
-					}
+	Downloader_routerGroup.GET("/zip/*path", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-type", "application/octet-stream")
+		path := c.Param("path")[1:]
+		path = strings.ReplaceAll(path, "/", "\\")
+		c.Stream(func(w io.Writer) bool {
+			ar := zip.NewWriter(w)
+			c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+				time.Now().Format("2006-01-02--15-04-05")))
+			filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
+				if f.IsDir() {
 					return nil
-				})
-				ar.Close()
-				return false
+				} else {
+					newPath := strings.ReplaceAll(p, path, "")
+					if newPath[0] == '\\' {
+						newPath = newPath[1:]
+					}
+					file, _ := os.Open(p)
+					f, _ := ar.Create(newPath)
+					io.Copy(f, file)
+				}
+				return nil
 			})
-		} else {
-			c.JSON(501, gin.H{"message": "The server is not supported."})
-		}
+			ar.Close()
+			return false
+		})
 	})
 	r.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
-func getFilesLists(path string, c *gin.Context) string {
+func upload_middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !upload_open {
+			c.JSON(501, gin.H{"message": "The server is not supported \"upload\""})
+			c.Abort()
+		}
+	}
+}
+
+func download_middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		path := c.FullPath()[4:]
+		path = path[:strings.Index(path, "/")]
+		if path == "ls" {
+			if !ls_open {
+				c.JSON(501, gin.H{"message": "The server is not supported \"list files\""})
+				c.Abort()
+			}
+		} else if path == "dls" {
+			if !dls_open {
+				c.JSON(501, gin.H{"message": "The server is not supported \"list download files\""})
+				c.Abort()
+			}
+		} else if path == "zip" {
+			if !zip_open {
+				c.JSON(501, gin.H{"message": "The server is not supported \"zip\""})
+				c.Abort()
+			}
+		} else if path == "n" {
+		} else {
+			c.JSON(501, gin.H{"message": "undefined."})
+			c.Abort()
+		}
+	}
+}
+
+func getFilesLists(path string, c *gin.Context, listType string) string {
 	if path[len(path)-1] != '/' {
 		path += "/"
 	}
@@ -222,7 +248,7 @@ func getFilesLists(path string, c *gin.Context) string {
 	result := "<html>Items:<br><br>"
 	fs, ds := "<p> File:<br>", "<p> Dir:<br>"
 	files, _ := ioutil.ReadDir(skillFolder)
-	if ls_open && !dls_open {
+	if listType == "ls" {
 		for _, file := range files {
 			if file.IsDir() {
 				ds += "  " + file.Name() + "<br>"
@@ -230,12 +256,12 @@ func getFilesLists(path string, c *gin.Context) string {
 				fs += "  " + file.Name() + "<br>"
 			}
 		}
-	} else {
+	} else if listType == "dls" {
 		for _, file := range files {
 			if file.IsDir() {
 				ds += "  <a href='" + c.Request.URL.Path + "/" + file.Name() + "'>" + file.Name() + "</a><br>"
 			} else {
-				fs += "  <a href='/download/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
+				fs += "  <a href='/dl/n/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
 			}
 		}
 	}
