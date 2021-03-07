@@ -124,6 +124,9 @@ func main() {
 		c.JSON(200, gin.H{"message": "It's the file download server." +
 			"You can use the path to download the file on the machine."})
 	})
+	r.NoRoute(func(c *gin.Context) {
+		c.JSON(404,gin.H{"message":"404 Not Found"})
+	})
 	Uploader_routerGroup := r.Group("/upload")
 	Uploader_routerGroup.Use(upload_middleware())
 	Uploader_routerGroup.GET("/", func(c *gin.Context) {
