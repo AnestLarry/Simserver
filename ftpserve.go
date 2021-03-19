@@ -19,7 +19,7 @@ var (
 	dls_open    = false
 	upload_open = false
 	zip_open    = false
-	Version     = "Mar 5,2021 Fr."
+	Version     = "Mar 19,2021 Fr."
 )
 
 func main() {
@@ -68,7 +68,7 @@ func main() {
 						os.Exit(0)
 					}
 				} else {
-					os.Mkdir("./upload", 0644)
+					os.Mkdir("./upload", 0764)
 				}
 			case "zip", "-zip":
 				fmt.Println(" -  zip mode on.")
@@ -125,7 +125,7 @@ func main() {
 			"You can use the path to download the file on the machine."})
 	})
 	r.NoRoute(func(c *gin.Context) {
-		c.JSON(404,gin.H{"message":"404 Not Found"})
+		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
 	Uploader_routerGroup := r.Group("/upload")
 	Uploader_routerGroup.Use(upload_middleware())
@@ -144,13 +144,13 @@ func main() {
 		files := form.File["files"]
 		for _, file := range files {
 			if !Libs.LibsXExists("upload") {
-				os.Mkdir("upload", 0644)
+				os.Mkdir("upload", 0764)
 			}
-			folder := fmt.Sprintf("upload/from[%s]", c.ClientIP())
+			folder := fmt.Sprintf("upload/from_%s_", strings.ReplaceAll(c.ClientIP(), ".", "_"))
 			if !Libs.LibsXExists(folder) {
-				os.Mkdir(folder, 0644)
+				os.Mkdir(folder, 0764)
 			}
-			c.SaveUploadedFile(file, fmt.Sprintf("%s/%s.dat", folder, file.Filename))
+			c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
 		}
 		c.JSON(200, gin.H{"message": "OK"})
 
@@ -204,6 +204,7 @@ func main() {
 			return false
 		})
 	})
+	fmt.Println(strings.Repeat("-", 15) + "\n" + fmt.Sprintf("%s:%s", ip, port))
 	r.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
