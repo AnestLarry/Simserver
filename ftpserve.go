@@ -3,6 +3,7 @@ package main
 import (
 	"Libs/Libs"
 	"archive/zip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,12 +16,23 @@ import (
 )
 
 var (
-	ls_open     = false
-	dls_open    = false
-	upload_open = false
-	zip_open    = false
-	Version     = "Mar 19,2021 Fr."
+	ls_open           = false
+	dls_open          = false
+	upload_open       = false
+	zip_open          = false
+	downloadCode_open = false
+	Version           = "Apr 17,2021 Sa."
 )
+
+var (
+	downloadCodeMap = map[string]downloadCodeItem{}
+)
+
+type downloadCodeItem struct {
+	Code  string
+	Name  string
+	Files []string
+}
 
 func main() {
 	ip := "0.0.0.0"
@@ -38,6 +50,7 @@ func main() {
 						" dls  - add download links with the ls function's list\n" +
 						" upload  - allow user upload files to host\n" +
 						" zip  - allow zip dir for download (DANGER!)\n" +
+						" downloadCode  - use download code to download a group file with setting\n" +
 						"Args:\n" +
 						" p / port  - use the port\n" +
 						" ip  - use the ip.\n" +
@@ -73,6 +86,10 @@ func main() {
 			case "zip", "-zip":
 				fmt.Println(" -  zip mode on.")
 				zip_open = true
+			case "downloadCode", "dC", "-downloadCode", "-dC":
+				fmt.Println(" -  downloadCode mode on.")
+				loadDownloadCodeJson()
+				downloadCode_open = true
 			case "RSUN", "-RSUN":
 				if Libs.LibsXExists("./upload") {
 					if Libs.LibsXIsDir("./upload") {
@@ -104,17 +121,10 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		return fmt.Sprintf("[%s %d %s] \n{%s} < %s >\n\"%s %s \"%s\" %s\"\n\n",
-			param.Method,
-			param.StatusCode,
-			param.ClientIP,
-			param.TimeStamp.Format(time.RFC1123),
-			param.Path,
-			param.Request.Proto,
-			param.Latency,
-			param.Request.UserAgent(),
-			param.ErrorMessage,
-		)
+		r := gin.H{"method": param.Method, "StatusCode": param.StatusCode, "ClientIP": param.ClientIP,
+			"TimeStamp": param.TimeStamp.Format(time.RFC1123), "Path": param.Path, "Request.Proto": param.Request.Proto,
+			"Latency": param.Latency, "User-Agent": param.Request.UserAgent(), "ErrorMessage": param.ErrorMessage}
+		return fmt.Sprintf("%v\n", r)
 	}))
 	r.Use(gin.Recovery())
 	r.GET("/version", func(c *gin.Context) {
@@ -204,6 +214,34 @@ func main() {
 			return false
 		})
 	})
+	Downloader_routerGroup.GET("/downloadCode/*dCode", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-type", "application/octet-stream")
+		dCode := c.Param("dCode")[1:]
+		dCodeItem, ok := downloadCodeMap[dCode]
+		if !ok {
+			c.JSON(403, gin.H{"message": "this Code is not support!"})
+		}
+		downloadCodeFiles := dCodeItem.Files
+		c.Stream(func(w io.Writer) bool {
+			ar := zip.NewWriter(w)
+			if dCodeItem.Name != "" {
+				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+					dCodeItem.Name))
+			} else {
+				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+					time.Now().Format("2006-01-02--15-04-05")))
+			}
+			for i := 0; i < len(downloadCodeFiles); i++ {
+				v := downloadCodeFiles[i]
+				file, _ := os.Open(v)
+				newPath := strings.ReplaceAll(v, "\\", "/")
+				f, _ := ar.Create(newPath[strings.LastIndex(newPath, "/")+1:])
+				io.Copy(f, file)
+			}
+			ar.Close()
+			return false
+		})
+	})
 	fmt.Println(strings.Repeat("-", 15) + "\n" + fmt.Sprintf("%s:%s", ip, port))
 	r.Run(fmt.Sprintf("%s:%s", ip, port))
 }
@@ -236,10 +274,37 @@ func download_middleware() gin.HandlerFunc {
 				c.JSON(501, gin.H{"message": "The server is not supported \"zip\""})
 				c.Abort()
 			}
+		} else if path == "downloadCode" {
+			if !downloadCode_open {
+				c.JSON(501, gin.H{"message": "The server is not supported \"downloadCode\""})
+				c.Abort()
+			}
 		} else if path == "n" {
 		} else {
 			c.JSON(501, gin.H{"message": "undefined."})
 			c.Abort()
+		}
+	}
+}
+
+func loadDownloadCodeJson() {
+	if !Libs.LibsXExists("./downloadCodes.json") {
+		fmt.Println("  downloadCodes.json is not exist.")
+		os.Exit(-1)
+	} else {
+		var downloadCodeJson []downloadCodeItem
+		downloadCodeFile, err := ioutil.ReadFile("./downloadCodes.json")
+		if err != nil {
+			fmt.Println("  open downloadCodes.json fail.")
+			os.Exit(-1)
+		}
+		err = json.Unmarshal(downloadCodeFile, &downloadCodeJson)
+		if err != nil {
+			fmt.Printf("  downloadCodeFile fail to parse json.\n%v\n", err)
+			os.Exit(-1)
+		}
+		for _, v := range downloadCodeJson {
+			downloadCodeMap[v.Code] = v
 		}
 	}
 }
