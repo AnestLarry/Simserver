@@ -21,7 +21,8 @@ var (
 	upload_open       = false
 	zip_open          = false
 	downloadCode_open = false
-	Version           = "Apr 17,2021 Sa."
+	log_file_open     = false
+	Version           = "Jun 13,2021 Fr."
 )
 
 var (
@@ -50,6 +51,7 @@ func main() {
 						" dls  - add download links with the ls function's list\n" +
 						" upload  - allow user upload files to host\n" +
 						" zip  - allow zip dir for download (DANGER!)\n" +
+						" log  - put log in file\n" +
 						" downloadCode  - use download code to download a group file with setting\n" +
 						"Args:\n" +
 						" p / port  - use the port\n" +
@@ -90,6 +92,9 @@ func main() {
 				fmt.Println(" -  downloadCode mode on.")
 				loadDownloadCodeJson()
 				downloadCode_open = true
+			case "log", "-log":
+				fmt.Println(" -  log file mode on.")
+				log_file_open = true
 			case "RSUN", "-RSUN":
 				if Libs.LibsXExists("./upload") {
 					if Libs.LibsXIsDir("./upload") {
@@ -117,6 +122,23 @@ func main() {
 				os.Exit(0)
 			}
 		}
+	}
+	if log_file_open {
+		gin.DisableConsoleColor()
+		var f *os.File
+		var err error
+		if !Libs.LibsXExists("ftps.log") {
+			f, err = os.Create("ftps.log")
+			if err != nil {
+				panic(err)
+			}
+		} else if Libs.LibsXIsFile("ftps.log") {
+			f, err = os.OpenFile("ftps.log", 0666, os.ModeAppend)
+			if err != nil {
+				panic(err)
+			}
+		}
+		gin.DefaultWriter = io.MultiWriter(f)
 	}
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
