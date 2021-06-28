@@ -1,0 +1,48 @@
+strategy:
+  matrix:
+    windows:
+      imageName: 'vs2017-win2016'
+    mac:
+      imageName: 'macOS-latest'
+    linux:
+      imageName: 'ubuntu-18.04'
+
+trigger:
+- none
+
+pool:
+  vmImage: $(imageName)
+
+steps: 
+  - task: GoTool@0
+    inputs:
+      version: '1.14'
+  - task: Go@0
+    inputs:
+      command: 'get'
+      arguments: '-d'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: Go@0
+    inputs:
+      command: 'build'
+      arguments: 'ftpserve.go'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: CopyFiles@2
+    inputs:
+      Contents: '**/ftpserve'
+      TargetFolder: '$(System.DefaultWorkingDirectory)/$(imageName)/'
+  - task: CopyFiles@2
+    inputs:
+      Contents: '**/ftpserve.exe'
+      TargetFolder: '$(System.DefaultWorkingDirectory)/$(imageName)/'
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/$(imageName)'
+      includeRootFolder: true
+      archiveType: '7z'
+      sevenZipCompression: 'ultra'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(imageName)/$(imageName)_$(Build.BuildId).7z'
+      replaceExistingArchive: true
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: drop
