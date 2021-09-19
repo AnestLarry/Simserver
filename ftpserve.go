@@ -22,7 +22,7 @@ var (
 	zip_open          = false
 	downloadCode_open = false
 	log_file_open     = false
-	Version           = "Jun 13,2021 Fr."
+	Version           = "Sep 19,2021 Su."
 )
 
 var (
@@ -159,113 +159,120 @@ func main() {
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
-	Uploader_routerGroup := r.Group("/upload")
-	Uploader_routerGroup.Use(upload_middleware())
-	Uploader_routerGroup.GET("/", func(c *gin.Context) {
-		c.Header("Content-Type", "text/html; charset=utf-8")
-		c.String(200, `<form action="/upload/" method="post" enctype="multipart/form-data">
+	routerGroup_init(r)
+	fmt.Println(strings.Repeat("-", 15) + "\n" + fmt.Sprintf("%s:%s", ip, port))
+	r.Run(fmt.Sprintf("%s:%s", ip, port))
+}
+
+func routerGroup_init(r *gin.Engine)  {
+	// Uploader routerGroup
+	func(Uploader_routerGroup *gin.RouterGroup){
+		Uploader_routerGroup.Use(upload_middleware())
+		Uploader_routerGroup.GET("/", func(c *gin.Context) {
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			c.String(200, `<form action="/upload/" method="post" enctype="multipart/form-data">
     Files: <input type="file" name="files" multiple><br><br>
     <input type="submit" value="Submit">
 </form>`)
-	})
-	Uploader_routerGroup.POST("/", func(c *gin.Context) {
-		form, err := c.MultipartForm()
-		if err != nil {
-			c.JSON(500, gin.H{"message": "got file error."})
-		}
-		files := form.File["files"]
-		for _, file := range files {
-			if !Libs.LibsXExists("upload") {
-				os.Mkdir("upload", 0764)
-			}
-			folder := fmt.Sprintf("upload/from_%s_", strings.ReplaceAll(c.ClientIP(), ".", "_"))
-			if !Libs.LibsXExists(folder) {
-				os.Mkdir(folder, 0764)
-			}
-			c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
-		}
-		c.JSON(200, gin.H{"message": "OK"})
-
-	})
-
-	Downloader_routerGroup := r.Group("/dl")
-	Downloader_routerGroup.Use(download_middleware())
-	Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
-		fileName := c.Param("path")[1:]
-		if Libs.LibsXIsFile(fileName) {
-			c.File(fileName)
-		} else {
-			c.JSON(404, gin.H{"message": "Not file found."})
-		}
-	})
-	Downloader_routerGroup.GET("/ls/*path", func(c *gin.Context) {
-		path := c.Param("path")[1:]
-		c.Header("Content-Type", "text/html; charset=utf-8")
-		files := getFilesLists(path, c, "ls")
-		c.String(200, files)
-	})
-	Downloader_routerGroup.GET("/dls/*path", func(c *gin.Context) {
-		path := c.Param("path")[1:]
-		c.Header("Content-Type", "text/html; charset=utf-8")
-		files := getFilesLists(path, c, "dls")
-		c.String(200, files)
-	})
-	Downloader_routerGroup.GET("/zip/*path", func(c *gin.Context) {
-		c.Writer.Header().Set("Content-type", "application/octet-stream")
-		path := c.Param("path")[1:]
-		path = strings.ReplaceAll(path, "/", "\\")
-		c.Stream(func(w io.Writer) bool {
-			ar := zip.NewWriter(w)
-			c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-				time.Now().Format("2006-01-02--15-04-05")))
-			filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
-				if f.IsDir() {
-					return nil
-				} else {
-					newPath := strings.ReplaceAll(p, path, "")
-					if newPath[0] == '\\' {
-						newPath = newPath[1:]
-					}
-					file, _ := os.Open(p)
-					f, _ := ar.Create(newPath)
-					io.Copy(f, file)
-				}
-				return nil
-			})
-			ar.Close()
-			return false
 		})
-	})
-	Downloader_routerGroup.GET("/downloadCode/*dCode", func(c *gin.Context) {
-		c.Writer.Header().Set("Content-type", "application/octet-stream")
-		dCode := c.Param("dCode")[1:]
-		dCodeItem, ok := downloadCodeMap[dCode]
-		if !ok {
-			c.JSON(403, gin.H{"message": "this Code is not support!"})
-		}
-		downloadCodeFiles := dCodeItem.Files
-		c.Stream(func(w io.Writer) bool {
-			ar := zip.NewWriter(w)
-			if dCodeItem.Name != "" {
-				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-					dCodeItem.Name))
+		Uploader_routerGroup.POST("/", func(c *gin.Context) {
+			form, err := c.MultipartForm()
+			if err != nil {
+				c.JSON(500, gin.H{"message": "got file error."})
+			}
+			files := form.File["files"]
+			for _, file := range files {
+				if !Libs.LibsXExists("upload") {
+					os.Mkdir("upload", 0764)
+				}
+				folder := fmt.Sprintf("upload/from_%s_", strings.ReplaceAll(c.ClientIP(), ".", "_"))
+				if !Libs.LibsXExists(folder) {
+					os.Mkdir(folder, 0764)
+				}
+				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
+			}
+			c.JSON(200, gin.H{"message": "OK"})
+
+		})
+	}(r.Group("/upload"))
+	// Downloader routerGroup
+	func(Downloader_routerGroup *gin.RouterGroup){
+		Downloader_routerGroup.Use(download_middleware())
+		Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
+			fileName := c.Param("path")[1:]
+			if Libs.LibsXIsFile(fileName) {
+				c.File(fileName)
 			} else {
+				c.JSON(404, gin.H{"message": "Not file found."})
+			}
+		})
+		Downloader_routerGroup.GET("/ls/*path", func(c *gin.Context) {
+			path := c.Param("path")[1:]
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			files := getFilesLists(path, c, "ls")
+			c.String(200, files)
+		})
+		Downloader_routerGroup.GET("/dls/*path", func(c *gin.Context) {
+			path := c.Param("path")[1:]
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			files := getFilesLists(path, c, "dls")
+			c.String(200, files)
+		})
+		Downloader_routerGroup.GET("/zip/*path", func(c *gin.Context) {
+			c.Writer.Header().Set("Content-type", "application/octet-stream")
+			path := c.Param("path")[1:]
+			path = strings.ReplaceAll(path, "/", "\\")
+			c.Stream(func(w io.Writer) bool {
+				ar := zip.NewWriter(w)
 				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
 					time.Now().Format("2006-01-02--15-04-05")))
-			}
-			for i := 0; i < len(downloadCodeFiles); i++ {
-				v := downloadCodeFiles[i]
-				file, _ := os.Open(v)
-				newPath := strings.ReplaceAll(v, "\\", "/")
-				f, _ := ar.Create(newPath[strings.LastIndex(newPath, "/")+1:])
-				io.Copy(f, file)
-			}
-			ar.Close()
-			return false
+				filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
+					if f.IsDir() {
+						return nil
+					} else {
+						newPath := strings.ReplaceAll(p, path, "")
+						if newPath[0] == '\\' {
+							newPath = newPath[1:]
+						}
+						file, _ := os.Open(p)
+						f, _ := ar.Create(newPath)
+						io.Copy(f, file)
+					}
+					return nil
+				})
+				ar.Close()
+				return false
+			})
 		})
-	})
-	fmt.Println(strings.Repeat("-", 15) + "\n" + fmt.Sprintf("%s:%s", ip, port))
-	r.Run(fmt.Sprintf("%s:%s", ip, port))
+		Downloader_routerGroup.GET("/downloadCode/*dCode", func(c *gin.Context) {
+			c.Writer.Header().Set("Content-type", "application/octet-stream")
+			dCode := c.Param("dCode")[1:]
+			dCodeItem, ok := downloadCodeMap[dCode]
+			if !ok {
+				c.JSON(403, gin.H{"message": "this Code is not support!"})
+			}
+			downloadCodeFiles := dCodeItem.Files
+			c.Stream(func(w io.Writer) bool {
+				ar := zip.NewWriter(w)
+				if dCodeItem.Name != "" {
+					c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+						dCodeItem.Name))
+				} else {
+					c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+						time.Now().Format("2006-01-02--15-04-05")))
+				}
+				for i := 0; i < len(downloadCodeFiles); i++ {
+					v := downloadCodeFiles[i]
+					file, _ := os.Open(v)
+					newPath := strings.ReplaceAll(v, "\\", "/")
+					f, _ := ar.Create(newPath[strings.LastIndex(newPath, "/")+1:])
+					io.Copy(f, file)
+				}
+				ar.Close()
+				return false
+			})
+		})
+	}(r.Group("/dl"))
 }
 
 func upload_middleware() gin.HandlerFunc {
