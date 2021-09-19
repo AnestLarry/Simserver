@@ -19,6 +19,7 @@ var (
 	ls_open           = false
 	dls_open          = false
 	upload_open       = false
+	upload_text_open  = false
 	zip_open          = false
 	downloadCode_open = false
 	log_file_open     = false
@@ -50,6 +51,7 @@ func main() {
 						" ls  - open ls function\n" +
 						" dls  - add download links with the ls function's list\n" +
 						" upload  - allow user upload files to host\n" +
+						" uploadText  - allow user fill textarea to save text in txt\n" +
 						" zip  - allow zip dir for download (DANGER!)\n" +
 						" log  - put log in file\n" +
 						" downloadCode  - use download code to download a group file with setting\n" +
@@ -77,6 +79,17 @@ func main() {
 			case "upload", "-upload":
 				fmt.Println(" -  upload mode on.")
 				upload_open = true
+				if Libs.LibsXExists("./upload") {
+					if !Libs.LibsXIsDir("./upload") {
+						fmt.Println("upload is not a folder!")
+						os.Exit(0)
+					}
+				} else {
+					os.Mkdir("./upload", 0764)
+				}
+			case "uploadText", "-uploadText", "uT", "-uT":
+				fmt.Println(" -  upload text mode on.")
+				upload_text_open = true
 				if Libs.LibsXExists("./upload") {
 					if !Libs.LibsXIsDir("./upload") {
 						fmt.Println("upload is not a folder!")
@@ -164,9 +177,9 @@ func main() {
 	r.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
-func routerGroup_init(r *gin.Engine)  {
+func routerGroup_init(r *gin.Engine) {
 	// Uploader routerGroup
-	func(Uploader_routerGroup *gin.RouterGroup){
+	func(Uploader_routerGroup *gin.RouterGroup) {
 		Uploader_routerGroup.Use(upload_middleware())
 		Uploader_routerGroup.GET("/", func(c *gin.Context) {
 			c.Header("Content-Type", "text/html; charset=utf-8")
@@ -194,9 +207,34 @@ func routerGroup_init(r *gin.Engine)  {
 			c.JSON(200, gin.H{"message": "OK"})
 
 		})
+		Uploader_routerGroup.GET("/text", func(c *gin.Context) {
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			c.String(200, `<form action="/upload/text" method="post" enctype="multipart/form-data">
+    <textarea name='text'></textarea><br><br>
+    <input type="submit" value="Submit">
+</form>`)
+		})
+		Uploader_routerGroup.POST("/text", func(c *gin.Context) {
+			text := c.PostForm("text")
+			f, err := os.Create(fmt.Sprintf("./upload/%s.txt", time.Now().Format("2006-01-02--15-04-05")))
+			if err != nil || text == "" {
+				fmt.Println("fail to get text.")
+				c.JSON(500, gin.H{"message": "fail to get text."})
+				f.Close()
+				return
+			}
+			_, err = f.WriteString(text)
+			f.Close()
+			if err != nil {
+				fmt.Println("fail to save text file.")
+				c.JSON(500, gin.H{"message": "fail to save text file."})
+				return
+			}
+			c.JSON(200, gin.H{"message": "OK"})
+		})
 	}(r.Group("/upload"))
 	// Downloader routerGroup
-	func(Downloader_routerGroup *gin.RouterGroup){
+	func(Downloader_routerGroup *gin.RouterGroup) {
 		Downloader_routerGroup.Use(download_middleware())
 		Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
 			fileName := c.Param("path")[1:]
@@ -277,10 +315,19 @@ func routerGroup_init(r *gin.Engine)  {
 
 func upload_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !upload_open {
-			c.JSON(501, gin.H{"message": "The server is not supported \"upload\""})
-			c.Abort()
+		path := c.FullPath()[7:]
+		if path == "/" {
+			if !upload_open {
+				c.JSON(501, gin.H{"message": "The server is not supported \"upload\""})
+				c.Abort()
+			}
+		} else if path == "/text" {
+			if !upload_text_open {
+				c.JSON(501, gin.H{"message": "The server is not supported \"uploadText\""})
+				c.Abort()
+			}
 		}
+
 	}
 }
 
