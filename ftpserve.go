@@ -43,23 +43,22 @@ func main() {
 		for i := 1; i < len(os.Args); i++ {
 			switch os.Args[i] {
 			case "h", "-h", "help":
-				fmt.Println(
-					"Tips:\n" +
-						" h  - show this help\n" +
-						" v  - get version\n" +
-						"Mode:\n" +
-						" ls  - open ls function\n" +
-						" dls  - add download links with the ls function's list\n" +
-						" upload  - allow user upload files to host\n" +
-						" uploadText  - allow user fill textarea to save text in txt\n" +
-						" zip  - allow zip dir for download (DANGER!)\n" +
-						" log  - put log in file\n" +
-						" downloadCode  - use download code to download a group file with setting\n" +
-						"Args:\n" +
-						" p / port  - use the port\n" +
-						" ip  - use the ip.\n" +
-						"Task:\n" +
-						" RSUN  - reset files which in upload folder to origin's name")
+				fmt.Println(`Tips:
+ h  - show this help
+ v  - get version
+Mode:
+ ls  - open ls function
+ dls  - add download links with the ls function's list
+ upload  - allow user upload files to host
+ uploadText  - allow user fill textarea to save text in txt
+ zip  - allow zip dir for download (DANGER!)
+ log  - put log in file
+ downloadCode  - use download code to download a group file with setting
+Args:
+ p / port  - use the port
+ ip  - use the ip.
+Task:
+ RSUN  - reset files which in upload folder to origin's name"`)
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
@@ -124,7 +123,7 @@ func main() {
 							temp := len(file.Name()) - 4
 							if !file.IsDir() && file.Name()[temp:] == ".dat" {
 								os.Rename(fmt.Sprintf("./upload/%s", file.Name()), fmt.Sprintf("./upload/%s", file.Name()[:temp]))
-								fmt.Println("[", file.Name(), "] reset to [", file.Name()[:temp], "]")
+								fmt.Printf("[%s] reset to [%s]\n", file.Name(), file.Name()[:temp])
 							}
 						}
 						os.Exit(0)
@@ -166,14 +165,13 @@ func main() {
 		c.JSON(200, gin.H{"version": Version})
 	})
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "It's the file download server." +
-			"You can use the path to download the file on the machine."})
+		c.JSON(200, gin.H{"message": `It's a file download server. You can transfer the file with the machine.`})
 	})
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
 	routerGroup_init(r)
-	fmt.Println(strings.Repeat("-", 15) + "\n" + fmt.Sprintf("%s:%s", ip, port))
+	fmt.Printf("%s\n%s:%s\n", strings.Repeat("-", 15), ip, port)
 	r.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
