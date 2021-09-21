@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simserver</title>
+</head>
+<body>
+<div style="width: 80%;margin: 0 auto;">
+    <h1>Items:</h1>
+    {{if eq .type "ls"}}
+    <ul>
+        <h3>Folders:</h3>{{ range $i,$v := .folderList }}
+        <li>{{$v.Name}}</li>{{ end }}
+    </ul>
+    <ul>
+        <h3>Files:</h3>{{ range $i,$v := .fileList }}
+        <li>{{$v.Name}}</li>{{ end }}
+    </ul>
+    {{ else if eq .type "dls"}}
+    <ul>
+        <h3>Folders:</h3>{{ range $i,$v := .folderList }}
+        <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
+    </ul>
+    <ul>
+        <h3>Files:</h3>{{ range $i,$v := .fileList }}
+        <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
+    </ul>
+    {{else}}
+    {{end}}
+</div>
+
+</body>
+</html>

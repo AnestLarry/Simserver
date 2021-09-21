@@ -3,8 +3,10 @@ package main
 import (
 	"Libs/Libs"
 	"archive/zip"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
@@ -23,17 +25,24 @@ var (
 	zip_open          = false
 	downloadCode_open = false
 	log_file_open     = false
-	Version           = "Sep 19,2021 Su."
+	Version           = "Aut, 2021"
 )
 
 var (
 	downloadCodeMap = map[string]downloadCodeItem{}
+	//go:embed static
+	staticFiles embed.FS
 )
 
 type downloadCodeItem struct {
 	Code  string
 	Name  string
 	Files []string
+}
+
+type itemField struct {
+	Name string
+	Path string
 }
 
 func main() {
@@ -58,7 +67,7 @@ Args:
  p / port  - use the port
  ip  - use the ip.
 Task:
- RSUN  - reset files which in upload folder to origin's name"`)
+ RSUN  - reset files which in upload folder to origin's name`)
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
@@ -181,10 +190,11 @@ func routerGroup_init(r *gin.Engine) {
 		Uploader_routerGroup.Use(upload_middleware())
 		Uploader_routerGroup.GET("/", func(c *gin.Context) {
 			c.Header("Content-Type", "text/html; charset=utf-8")
-			c.String(200, `<form action="/upload/" method="post" enctype="multipart/form-data">
-    Files: <input type="file" name="files" multiple><br><br>
-    <input type="submit" value="Submit">
-</form>`)
+			c.Stream(func(w io.Writer) bool {
+				file, _ := staticFiles.ReadFile("static/upload.html")
+				w.Write(file)
+				return false
+			})
 		})
 		Uploader_routerGroup.POST("/", func(c *gin.Context) {
 			form, err := c.MultipartForm()
@@ -207,10 +217,11 @@ func routerGroup_init(r *gin.Engine) {
 		})
 		Uploader_routerGroup.GET("/text", func(c *gin.Context) {
 			c.Header("Content-Type", "text/html; charset=utf-8")
-			c.String(200, `<form action="/upload/text" method="post" enctype="multipart/form-data">
-    <textarea name='text'></textarea><br><br>
-    <input type="submit" value="Submit">
-</form>`)
+			c.Stream(func(w io.Writer) bool {
+				file, _ := staticFiles.ReadFile("static/uploadText.html")
+				w.Write(file)
+				return false
+			})
 		})
 		Uploader_routerGroup.POST("/text", func(c *gin.Context) {
 			text := c.PostForm("text")
@@ -233,6 +244,8 @@ func routerGroup_init(r *gin.Engine) {
 	}(r.Group("/upload"))
 	// Downloader routerGroup
 	func(Downloader_routerGroup *gin.RouterGroup) {
+		t, _ := template.ParseFS(staticFiles, "static/lists.html")
+		r.SetHTMLTemplate(t)
 		Downloader_routerGroup.Use(download_middleware())
 		Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
 			fileName := c.Param("path")[1:]
@@ -243,16 +256,12 @@ func routerGroup_init(r *gin.Engine) {
 			}
 		})
 		Downloader_routerGroup.GET("/ls/*path", func(c *gin.Context) {
-			path := c.Param("path")[1:]
-			c.Header("Content-Type", "text/html; charset=utf-8")
-			files := getFilesLists(path, c, "ls")
-			c.String(200, files)
+			ls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
+			c.HTML(200, "lists.html", gin.H{"type": "ls", "folderList": ls[0], "fileList": ls[1]})
 		})
 		Downloader_routerGroup.GET("/dls/*path", func(c *gin.Context) {
-			path := c.Param("path")[1:]
-			c.Header("Content-Type", "text/html; charset=utf-8")
-			files := getFilesLists(path, c, "dls")
-			c.String(200, files)
+			dls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
+			c.HTML(200, "lists.html", gin.H{"type": "dls", "folderList": dls[0], "fileList": dls[1]})
 		})
 		Downloader_routerGroup.GET("/zip/*path", func(c *gin.Context) {
 			c.Writer.Header().Set("Content-type", "application/octet-stream")
@@ -383,33 +392,18 @@ func loadDownloadCodeJson() {
 	}
 }
 
-func getFilesLists(path string, c *gin.Context, listType string) string {
+func getFilesLists(path, Request_URL_Path string) [][]itemField {
 	if path[len(path)-1] != '/' {
 		path += "/"
 	}
-	skillFolder := path
-	result := "<html>Items:<br><br>"
-	fs, ds := "<p> File:<br>", "<p> Dir:<br>"
-	files, _ := ioutil.ReadDir(skillFolder)
-	if listType == "ls" {
-		for _, file := range files {
-			if file.IsDir() {
-				ds += "  " + file.Name() + "<br>"
-			} else {
-				fs += "  " + file.Name() + "<br>"
-			}
-		}
-	} else if listType == "dls" {
-		for _, file := range files {
-			if file.IsDir() {
-				ds += "  <a href='" + c.Request.URL.Path + "/" + file.Name() + "'>" + file.Name() + "</a><br>"
-			} else {
-				fs += "  <a href='/dl/n/" + path + file.Name() + "'>" + file.Name() + "</a><br>"
-			}
+	res := make([][]itemField, 2)
+	files, _ := ioutil.ReadDir(path)
+	for _, file := range files {
+		if file.IsDir() {
+			res[0] = append(res[0], itemField{file.Name(), Request_URL_Path + "/" + file.Name()})
+		} else {
+			res[1] = append(res[1], itemField{file.Name(), "/dl/n/" + path + file.Name()})
 		}
 	}
-	ds += "</p>"
-	fs += "</p>"
-	result = result + ds + "<br>" + fs + "</html>"
-	return result
+	return res
 }
