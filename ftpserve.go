@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +26,7 @@ var (
 	upload_text_open  = false
 	zip_open          = false
 	downloadCode_open = false
+	view_open         = false
 	log_file_open     = false
 	Version           = "Aut, 2021"
 )
@@ -32,6 +35,8 @@ var (
 	downloadCodeMap = map[string]downloadCodeItem{}
 	//go:embed static
 	staticFiles embed.FS
+	//go:embed view
+	viewFiles embed.FS
 )
 
 type downloadCodeItem struct {
@@ -113,6 +118,9 @@ Task:
 				fmt.Println(" -  downloadCode mode on.")
 				loadDownloadCodeJson()
 				downloadCode_open = true
+			case "view", "-view":
+				fmt.Println(" -  view mode on.")
+				view_open = true
 			case "log", "-log":
 				fmt.Println(" -  log file mode on.")
 				log_file_open = true
@@ -318,6 +326,16 @@ func routerGroup_init(r *gin.Engine) {
 			})
 		})
 	}(r.Group("/dl"))
+	// View routerGroup
+	func(View_routerGroup *gin.RouterGroup) {
+		View_routerGroup.Use(view_middleware())
+		views, err := fs.Sub(viewFiles, "view/h5player")
+		if err != nil {
+			panic(err)
+		}
+		View_routerGroup.StaticFS("/h5player", http.FS(views))
+
+	}(r.Group("/view"))
 }
 
 func upload_middleware() gin.HandlerFunc {
@@ -365,6 +383,15 @@ func download_middleware() gin.HandlerFunc {
 		} else if path == "n" {
 		} else {
 			c.JSON(501, gin.H{"message": "undefined."})
+			c.Abort()
+		}
+	}
+}
+
+func view_middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !view_open {
+			c.JSON(500, gin.H{"message": "The server is not supported \"view\""})
 			c.Abort()
 		}
 	}

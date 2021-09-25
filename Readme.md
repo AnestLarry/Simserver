@@ -84,6 +84,8 @@ explain for commands.
 ## Built With
 
 * Gin
+* Go 1.16
+* xgplayer 2.9.6
 
 ## Authors
 
