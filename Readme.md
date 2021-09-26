@@ -4,7 +4,7 @@ It's a file server. You can transfer the file with the machine.
 
 ## Getting Started
 
-You can get binary in release page or build the newest version from source code.
+You can get binary in release page or build the latest version from source code.
 
 ## Usage
 ```
@@ -17,6 +17,7 @@ Mode:
  upload  - allow user upload files to host
  uploadText  - allow user fill textarea to save text in txt
  zip  - allow zip dir for download (DANGER!)
+ https  - use https with crt and key
  log  - put log in file
  downloadCode  - use download code to download a group file with setting
 Args:
@@ -49,6 +50,10 @@ explain for commands.
   - `ip:port/upload/text` Open this URL to get the upload text page. It can upload text without a txt file.
 * `-zip` Open zip mode.
   - `ip:port/dl/zip/folderPath` Open this URL to download folder with zip format package.
+* `https` use https.
+  - `-https server.crt server.key` Example for Win
+  - `-https server.pem server.key` Example for Linux
+    * You can get crt or key from openssl.
 * `-log` Open log mode.
   - It will save run logs into `ftps.log`.
 * `-downloadCode` Open downloadCode mode.

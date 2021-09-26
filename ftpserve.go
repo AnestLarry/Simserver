@@ -18,6 +18,7 @@ import (
 
 var (
 	log_file_open = false
+	https_open    = false
 	Version       = "Aut, 2021"
 )
 
@@ -29,8 +30,9 @@ var (
 )
 
 func main() {
-	ip := "0.0.0.0"
-	port := "5000"
+	ip, port := "0.0.0.0", "5000"
+	pem_file, key_file := "", ""
+	var err error
 	if len(os.Args) > 1 {
 		for i := 1; i < len(os.Args); i++ {
 			switch os.Args[i] {
@@ -44,6 +46,7 @@ Mode:
  upload  - allow user upload files to host
  uploadText  - allow user fill textarea to save text in txt
  zip  - allow zip dir for downloadGroup (DANGER!)
+ https  - use https with crt and key 
  log  - put log in file
  downloadCode  - use downloadGroup code to downloadGroup a group file with setting
 Args:
@@ -102,6 +105,12 @@ Task:
 			case "log", "-log":
 				fmt.Println(" -  log file mode on.")
 				log_file_open = true
+			case "https", "-https":
+				https_open = true
+				pem_file = os.Args[i+1]
+				key_file = os.Args[i+2]
+				i = i + 2
+				fmt.Println(" -  https mode on.")
 			case "RSUN", "-RSUN":
 				if Libs.LibsXExists("./upload") {
 					if Libs.LibsXIsDir("./upload") {
@@ -167,7 +176,14 @@ Task:
 	})
 	routerGroup_init(r)
 	fmt.Printf("%s\n%s:%s\n", strings.Repeat("-", 15), ip, port)
-	r.Run(fmt.Sprintf("%s:%s", ip, port))
+	if https_open {
+		err = r.RunTLS(fmt.Sprintf("%s:%s", ip, port), pem_file, key_file)
+	} else {
+		err = r.Run(fmt.Sprintf("%s:%s", ip, port))
+	}
+	if err != nil {
+		panic(err)
+	}
 }
 
 func routerGroup_init(r *gin.Engine) {
