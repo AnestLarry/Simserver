@@ -101,3 +101,6 @@ See also the list of [contributors](https://github.com/AnestLarry/Simserver/cont
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Thanks
+[![](./Resources/icon-goland.svg)](https://www.jetbrains.com/)
