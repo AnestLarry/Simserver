@@ -41,7 +41,7 @@ explain for commands.
     * `folderPath` It is a path for your folder.
       - `C:\\Users\\Administrator\\Desktop` Example for win.
       - `/home/root/desktop` Example for Linux.
-* `-dls` Open dls mode.(dls: download function with ls)
+* `-dls` Open dls mode.(dls: `ls` with download function)
     - `ip:port/dl/dls/folderPath` Open this URL to get the file list corresponding with download link to the path.
 * `-upload` Open upload mode.
   - `ip:port/upload/` Open this URL to get the upload page. It can upload lots of files once.
