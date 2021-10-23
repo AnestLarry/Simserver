@@ -149,7 +149,7 @@ Task:
 				panic(err)
 			}
 		} else if Libs.LibsXIsFile("ftps.log") {
-			f, err = os.OpenFile("ftps.log", 0666, os.ModeAppend)
+			f, err = os.OpenFile("ftps.log", os.O_APPEND, os.ModePerm)
 			if err != nil {
 				panic(err)
 			}
