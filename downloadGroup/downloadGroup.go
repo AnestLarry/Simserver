@@ -6,14 +6,16 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -38,7 +40,6 @@ type DownloadCodeItem struct {
 func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, staticFiles embed.FS, r *gin.Engine) {
 	t, _ := template.ParseFS(staticFiles, "static/lists.html")
 	r.SetHTMLTemplate(t)
-	//Downloader_routerGroup.Use(download_middleware())
 	Downloader_routerGroup.Use(download_middleware())
 	Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
 		fileName := c.Param("path")[1:]
@@ -145,17 +146,19 @@ func download_middleware() gin.HandlerFunc {
 }
 
 func getFilesLists(path, Request_URL_Path string) [][]ItemField {
-	if path[len(path)-1] != '/' {
-		path += "/"
-	}
 	res := make([][]ItemField, 2)
 	files, _ := ioutil.ReadDir(path)
 	for _, file := range files {
 		if file.IsDir() {
 			res[0] = append(res[0], ItemField{file.Name(), Request_URL_Path + "/" + file.Name()})
 		} else {
-			res[1] = append(res[1], ItemField{file.Name(), "/dl/n/" + path + file.Name()})
+			res[1] = append(res[1], ItemField{file.Name(), "/dl/n/" + path + "/" + file.Name()})
 		}
+	}
+	for resI := range res {
+		sort.Slice(res[resI], func(i, j int) bool {
+			return strings.ToLower(res[resI][i].Name) < strings.ToLower(res[resI][j].Name)
+		})
 	}
 	return res
 }
