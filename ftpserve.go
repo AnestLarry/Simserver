@@ -2,6 +2,7 @@ package main
 
 import (
 	"Simserver/Libs"
+	"Simserver/config"
 	"Simserver/downloadGroup"
 	"Simserver/uploadGroup"
 	"Simserver/viewGroup"
@@ -27,13 +28,13 @@ var (
 	staticFiles embed.FS
 	//go:embed view
 	viewFiles embed.FS
+	ip, port,pem_file,key_file  = "0.0.0.0", "5000","",""
 )
 
 func main() {
-	ip, port := "0.0.0.0", "5000"
-	pem_file, key_file := "", ""
 	var err error
 	if len(os.Args) > 1 {
+	ArgsFor:
 		for i := 1; i < len(os.Args); i++ {
 			switch os.Args[i] {
 			case "h", "-h", "help":
@@ -51,7 +52,8 @@ Mode:
  downloadCode  - use downloadGroup code to downloadGroup a group file with setting
 Args:
  p / port  - use the port
- ip  - use the ip.
+ ip  - use the ip
+ config  - use 'config.json' args
 Task:
  RSUN  - reset files which in upload folder to origin's name`)
 				os.Exit(0)
@@ -133,6 +135,10 @@ Task:
 						os.Exit(0)
 					}
 				}
+			case "config", "-config":
+				fmt.Println("start parse 'config.json'")
+				loadConfigFromArgsConfigStruct(argsConfig.ArgConfigInit())
+				break ArgsFor
 			default:
 				fmt.Println("There is arg(s) cannot parse. Do you need \"-h\" ?")
 				os.Exit(0)
@@ -184,6 +190,32 @@ Task:
 	if err != nil {
 		panic(err)
 	}
+}
+
+func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
+	downloadGroup.Ls_open = acs.Ls
+	downloadGroup.Dls_open = acs.Dls
+	downloadGroup.Zip_open = acs.Zip
+	downloadGroup.DownloadCode_open = acs.DownloadCode
+	uploadGroup.Upload_text_open = acs.UploadText
+	uploadGroup.Upload_open = acs.Upload
+	log_file_open = acs.Log
+	if acs.Ip != ""{
+		ip = acs.Ip
+	}
+	if acs.Port != ""{
+		port = acs.Port
+	}
+	if len(acs.Https) > 0 {
+		if len(acs.Https) == 2 {
+			https_open = true
+				pem_file = acs.Https[0]
+				key_file = acs.Https[1]
+		}else {
+			fmt.Println("config File:\nhttps args nums error.")
+		}
+	}
+	fmt.Printf("ls:%v, dls:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n",acs.Ls,acs.Dls,acs.Zip,acs.DownloadCode,acs.Upload,acs.UploadText,acs.Log,https_open)
 }
 
 func routerGroup_init(r *gin.Engine) {
