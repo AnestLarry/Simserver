@@ -2,32 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simserver</title>
+    <style>
+        #list {
+            width: 48%;
+            margin: 0 auto;
+        }
+        @media screen and (max-width: 480px) {
+            #list {
+                width: 84%;
+                margin: 0 auto;
+            }
+        }
+        ul li {
+            margin-top: 3px;
+            text-align: center;
+            list-style: none;
+        }
+        ul li:nth-child(2n-1) {
+            border: blue solid 1px;
+        }
+        ul li:nth-child(2n) {
+            border: red solid 1px;
+        }
+        ul li a {
+            height: 100%;
+            text-decoration: none;
+            word-wrap: break-word;
+            outline: none;
+            color: black;
+            display: block;
+            padding: 3px;
+            font-size: large;
+        }
+        ul li a:hover {
+            background-color: #808080;
+        }
+    </style>
 </head>
 <body>
-<div style="width: 80%;margin: 0 auto;">
-    <h1>Items:</h1>
-    {{if eq .type "ls"}}
-    <ul>
-        <h3>Folders:</h3>{{ range $i,$v := .folderList }}
-        <li>{{$v.Name}}</li>{{ end }}
-    </ul>
-    <ul>
-        <h3>Files:</h3>{{ range $i,$v := .fileList }}
-        <li>{{$v.Name}}</li>{{ end }}
-    </ul>
-    {{ else if eq .type "dls"}}
-    <ul>
-        <h3>Folders:</h3>{{ range $i,$v := .folderList }}
-        <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
-    </ul>
-    <ul>
-        <h3>Files:</h3>{{ range $i,$v := .fileList }}
-        <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
-    </ul>
-    {{else}}
-    {{end}}
-</div>
-
+    <div id="list">
+        <h1>Items:</h1>
+        <ul>
+            <li><a onclick="window.location.href=window.location.href.toString().substring(0,window.location.href.toString().lastIndexOf('/'));">..</a></li>
+        </ul>
+        {{if eq .type "ls"}}
+        <ul class="fls">
+            <h3>Folders:</h3>{{ range $i,$v := .folderList }}
+            <li>{{$v.Name}}</li>{{ end }}
+        </ul>
+        <ul>
+            <h3>Files:</h3>{{ range $i,$v := .fileList }}
+            <li>{{$v.Name}}</li>{{ end }}
+        </ul>
+        {{ else if eq .type "dls"}}
+        <ul class="fls">
+            <h3>Folders:</h3>{{ range $i,$v := .folderList }}
+            <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
+        </ul>
+        <ul>
+            <h3>Files:</h3>{{ range $i,$v := .fileList }}
+            <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
+        </ul>
+        {{else}} {{end}}
+    </div>
 </body>
 </html>
