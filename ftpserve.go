@@ -99,7 +99,6 @@ Task:
 				downloadGroup.Zip_open = true
 			case "downloadCode", "dC", "-downloadCode", "-dC":
 				fmt.Println(" -  downloadCode mode on.")
-				downloadGroup.LoadDownloadCodeJson()
 				downloadGroup.DownloadCode_open = true
 			case "view", "-view":
 				fmt.Println(" -  view mode on.")

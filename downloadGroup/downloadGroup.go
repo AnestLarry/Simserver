@@ -32,12 +32,13 @@ type ItemField struct {
 }
 
 type DownloadCodeItem struct {
-	Code  string
-	Name  string
-	Files []string
+	Code  string `json:"Code"`
+	Name  string `json:"Name"`
+	Files []string `json:"Files"`
 }
 
 func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, staticFiles embed.FS, r *gin.Engine) {
+	LoadDownloadCodeJson()
 	t, _ := template.ParseFS(staticFiles, "static/lists.html")
 	r.SetHTMLTemplate(t)
 	Downloader_routerGroup.Use(download_middleware())
@@ -84,32 +85,33 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 		})
 	})
 	Downloader_routerGroup.GET("/downloadCode/*dCode", func(c *gin.Context) {
-		c.Writer.Header().Set("Content-type", "application/octet-stream")
 		dCode := c.Param("dCode")[1:]
 		dCodeItem, ok := DownloadCodeMap[dCode]
 		if !ok {
 			c.JSON(403, gin.H{"message": "this Code is not support!"})
+		}else{
+			c.Writer.Header().Set("Content-type", "application/octet-stream")
+			downloadCodeFiles := dCodeItem.Files
+			c.Stream(func(w io.Writer) bool {
+				ar := zip.NewWriter(w)
+				if dCodeItem.Name != "" {
+					c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+						dCodeItem.Name))
+				} else {
+					c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+						time.Now().Format("2006-01-02--15-04-05")))
+				}
+				for i := 0; i < len(downloadCodeFiles); i++ {
+					v := downloadCodeFiles[i]
+					file, _ := os.Open(v)
+					newPath := strings.ReplaceAll(v, "\\", "/")
+					f, _ := ar.Create(newPath[strings.LastIndex(newPath, "/")+1:])
+					io.Copy(f, file)
+				}
+				ar.Close()
+				return false
+			})
 		}
-		downloadCodeFiles := dCodeItem.Files
-		c.Stream(func(w io.Writer) bool {
-			ar := zip.NewWriter(w)
-			if dCodeItem.Name != "" {
-				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-					dCodeItem.Name))
-			} else {
-				c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-					time.Now().Format("2006-01-02--15-04-05")))
-			}
-			for i := 0; i < len(downloadCodeFiles); i++ {
-				v := downloadCodeFiles[i]
-				file, _ := os.Open(v)
-				newPath := strings.ReplaceAll(v, "\\", "/")
-				f, _ := ar.Create(newPath[strings.LastIndex(newPath, "/")+1:])
-				io.Copy(f, file)
-			}
-			ar.Close()
-			return false
-		})
 	})
 }
 
