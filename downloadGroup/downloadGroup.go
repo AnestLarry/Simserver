@@ -32,13 +32,13 @@ type ItemField struct {
 }
 
 type DownloadCodeItem struct {
-	Code  string `json:"Code"`
-	Name  string `json:"Name"`
+	Code  string   `json:"Code"`
+	Name  string   `json:"Name"`
 	Files []string `json:"Files"`
 }
 
 func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, staticFiles embed.FS, r *gin.Engine) {
-	if DownloadCode_open{
+	if DownloadCode_open {
 		LoadDownloadCodeJson()
 	}
 	t, _ := template.ParseFS(staticFiles, "static/lists.html")
@@ -91,7 +91,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 		dCodeItem, ok := DownloadCodeMap[dCode]
 		if !ok {
 			c.JSON(403, gin.H{"message": "this Code is not support!"})
-		}else{
+		} else {
 			c.Writer.Header().Set("Content-type", "application/octet-stream")
 			downloadCodeFiles := dCodeItem.Files
 			c.Stream(func(w io.Writer) bool {
@@ -119,31 +119,11 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 
 func download_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.FullPath()[4:]
-		path = path[:strings.Index(path, "/")]
-		if path == "ls" {
-			if !Ls_open {
-				c.JSON(501, gin.H{"message": "The server is not supported \"list files\""})
-				c.Abort()
-			}
-		} else if path == "dls" {
-			if !Dls_open {
-				c.JSON(501, gin.H{"message": "The server is not supported \"list downloadGroup files\""})
-				c.Abort()
-			}
-		} else if path == "zip" {
-			if !Zip_open {
-				c.JSON(501, gin.H{"message": "The server is not supported \"zip\""})
-				c.Abort()
-			}
-		} else if path == "downloadCode" {
-			if !DownloadCode_open {
-				c.JSON(501, gin.H{"message": "The server is not supported \"downloadCode\""})
-				c.Abort()
-			}
-		} else if path == "n" {
-		} else {
-			c.JSON(501, gin.H{"message": "undefined."})
+		path := c.FullPath()[4:strings.LastIndex(c.FullPath(), "/")]
+		pathDict := map[string]bool{"ls": Ls_open, "dls": Dls_open, "zip": Zip_open, "downloadCode": DownloadCode_open, "n": true}
+		v, ok := pathDict[path]
+		if !ok || !v {
+			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", path)})
 			c.Abort()
 		}
 	}
