@@ -20,7 +20,7 @@ import (
 var (
 	log_file_open = false
 	https_open    = false
-	Version       = "Aut, 2021"
+	Version       = "Win, 2021"
 )
 
 var (

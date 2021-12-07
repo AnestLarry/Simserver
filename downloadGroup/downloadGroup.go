@@ -38,7 +38,9 @@ type DownloadCodeItem struct {
 }
 
 func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, staticFiles embed.FS, r *gin.Engine) {
-	LoadDownloadCodeJson()
+	if DownloadCode_open{
+		LoadDownloadCodeJson()
+	}
 	t, _ := template.ParseFS(staticFiles, "static/lists.html")
 	r.SetHTMLTemplate(t)
 	Downloader_routerGroup.Use(download_middleware())
