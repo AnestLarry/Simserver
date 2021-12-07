@@ -19,20 +19,15 @@ var (
 func upload_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()[7:]
-		if path == "/" {
-			if !Upload_open {
-				c.JSON(501, gin.H{"message": "The server is not supported \"upload\""})
-				c.Abort()
-			}
-		} else if path == "/text" {
-			if !Upload_text_open {
-				c.JSON(501, gin.H{"message": "The server is not supported \"uploadText\""})
-				c.Abort()
-			}
+		pathDict := map[string]bool{"/": Upload_open, "/text": Upload_text_open}
+		v, ok := pathDict[path]
+		if !ok || !v {
+			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", strings.Trim(c.FullPath(), "/"))})
+			c.Abort()
 		}
-
 	}
 }
+
 func Upload_routerGroup_init(Uploader_routerGroup *gin.RouterGroup, staticFiles embed.FS) {
 	Uploader_routerGroup.Use(upload_middleware())
 	Uploader_routerGroup.GET("/", func(c *gin.Context) {
