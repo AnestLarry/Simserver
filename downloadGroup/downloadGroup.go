@@ -54,7 +54,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 	})
 	Downloader_routerGroup.GET("/ls/*path", func(c *gin.Context) {
 		ls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
-		c.HTML(200, "lists.html", gin.H{"type": "ls", "folderList": ls[0], "fileList": ls[1]})
+		c.JSON(200,gin.H{"folderList": ls[0], "fileList": ls[1]})
 	})
 	Downloader_routerGroup.GET("/dls/*path", func(c *gin.Context) {
 		dls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())

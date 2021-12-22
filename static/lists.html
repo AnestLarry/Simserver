@@ -48,16 +48,7 @@
         <ul>
             <li><a onclick="window.location.href=window.location.href.toString().substring(0,window.location.href.toString().lastIndexOf('/'));">..</a></li>
         </ul>
-        {{if eq .type "ls"}}
-        <ul class="fls">
-            <h3>Folders:</h3>{{ range $i,$v := .folderList }}
-            <li>{{$v.Name}}</li>{{ end }}
-        </ul>
-        <ul>
-            <h3>Files:</h3>{{ range $i,$v := .fileList }}
-            <li>{{$v.Name}}</li>{{ end }}
-        </ul>
-        {{ else if eq .type "dls"}}
+        {{if eq .type "dls"}}
         <ul class="fls">
             <h3>Folders:</h3>{{ range $i,$v := .folderList }}
             <li><a href='{{$v.Path}}'>{{$v.Name}}</a></li>{{ end }}
@@ -69,4 +60,5 @@
         {{else}} {{end}}
     </div>
 </body>
+
 </html>
