@@ -20,15 +20,15 @@ import (
 var (
 	log_file_open = false
 	https_open    = false
-	Version       = "Win, 2021"
+	Version       = "Spr, 2022"
 )
 
 var (
 	//go:embed static
 	staticFiles embed.FS
 	//go:embed view
-	viewFiles embed.FS
-	ip, port,pem_file,key_file  = "0.0.0.0", "5000","",""
+	viewFiles                    embed.FS
+	ip, port, pem_file, key_file = "0.0.0.0", "5000", "", ""
 )
 
 func main() {
@@ -50,12 +50,13 @@ Mode:
  https  - use https with crt and key 
  log  - put log in file
  downloadCode  - use downloadGroup code to downloadGroup a group file with setting
+ view  - use view in running
 Args:
  p / port  - use the port
  ip  - use the ip
  config  - use 'config.json' args
 Task:
- RSUN  - reset files which in upload folder to origin's name`)
+ RFN  - restore files' name`)
 				os.Exit(0)
 			case "v", "-v", "version":
 				fmt.Println(Version)
@@ -112,28 +113,8 @@ Task:
 				key_file = os.Args[i+2]
 				i = i + 2
 				fmt.Println(" -  https mode on.")
-			case "RSUN", "-RSUN":
-				if Libs.LibsXExists("./upload") {
-					if Libs.LibsXIsDir("./upload") {
-						fmt.Println("WARMING :  It may be fail or rewrite the same name file.\nkeyin \"y\" to continue or other to exit")
-						{
-							temp := ""
-							fmt.Scanf("%s", &temp)
-							if temp != "y" {
-								os.Exit(0)
-							}
-						}
-						files, _ := ioutil.ReadDir("./upload")
-						for _, file := range files {
-							temp := len(file.Name()) - 4
-							if !file.IsDir() && file.Name()[temp:] == ".dat" {
-								os.Rename(fmt.Sprintf("./upload/%s", file.Name()), fmt.Sprintf("./upload/%s", file.Name()[:temp]))
-								fmt.Printf("[%s] reset to [%s]\n", file.Name(), file.Name()[:temp])
-							}
-						}
-						os.Exit(0)
-					}
-				}
+			case "RFN", "-RFN":
+				restoreFileName()
 			case "config", "-config":
 				fmt.Println("start parse 'config.json'")
 				loadConfigFromArgsConfigStruct(argsConfig.ArgConfigInit())
@@ -199,22 +180,22 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	uploadGroup.Upload_text_open = acs.UploadText
 	uploadGroup.Upload_open = acs.Upload
 	log_file_open = acs.Log
-	if acs.Ip != ""{
+	if acs.Ip != "" {
 		ip = acs.Ip
 	}
-	if acs.Port != ""{
+	if acs.Port != "" {
 		port = acs.Port
 	}
 	if len(acs.Https) > 0 {
 		if len(acs.Https) == 2 {
 			https_open = true
-				pem_file = acs.Https[0]
-				key_file = acs.Https[1]
-		}else {
+			pem_file = acs.Https[0]
+			key_file = acs.Https[1]
+		} else {
 			fmt.Println("config File:\nhttps args nums error.")
 		}
 	}
-	fmt.Printf("ls:%v, dls:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n",acs.Ls,acs.Dls,acs.Zip,acs.DownloadCode,acs.Upload,acs.UploadText,acs.Log,https_open)
+	fmt.Printf("ls:%v, dls:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n", acs.Ls, acs.Dls, acs.Zip, acs.DownloadCode, acs.Upload, acs.UploadText, acs.Log, https_open)
 }
 
 func routerGroup_init(r *gin.Engine) {
@@ -224,4 +205,33 @@ func routerGroup_init(r *gin.Engine) {
 	downloadGroup.Downloader_routerGroup_init(r.Group("/dl"), staticFiles, r)
 	// View routerGroup
 	viewGroup.View_routerGroup_init(r.Group("/view"), viewFiles)
+}
+
+func restoreFileName() {
+	if !(Libs.LibsXExists("./upload") && Libs.LibsXIsDir("./upload")) {
+		return
+	}
+	fmt.Println("WARMING :  It may be fail or rewrite the same name file.\nkeyin \"y\" to continue or other to exit")
+	{
+		temp := ""
+		fmt.Scanf("%s", &temp)
+		if temp != "y" {
+			os.Exit(0)
+		}
+	}
+	folders, _ := ioutil.ReadDir("./upload")
+	for _, folder := range folders {
+		if !folder.IsDir() {
+			continue
+		}
+		files, _ := ioutil.ReadDir(fmt.Sprintf("./upload/%s", folder.Name()))
+		for _, file := range files {
+			path := fmt.Sprintf("./upload/%s/%s", folder.Name(), file.Name())
+			if !file.IsDir() && path[len(path)-4:] == "_dat" {
+				os.Rename(path, path[:len(path)-4])
+				fmt.Printf("[%s] reset to [%s]\n", path, path[:len(path)-4])
+			}
+		}
+	}
+	os.Exit(0)
 }
