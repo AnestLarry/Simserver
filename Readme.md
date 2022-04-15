@@ -20,12 +20,13 @@ Mode:
  https  - use https with crt and key 
  log  - put log in file
  downloadCode  - use downloadGroup code to downloadGroup a group file with setting
+ view  - use view in running
 Args:
  p / port  - use the port
  ip  - use the ip
  config  - use 'config.json' args
 Task:
- RSUN  - reset files which in upload folder to origin's name
+ RFN  - restore files' name
 ```
 
 explain for commands.
@@ -83,6 +84,10 @@ explain for commands.
       * `Code` It is `ip:port/dl/downloadCode/Code`'s code.
       * `Name` The file name is displayed in browser.
       * `Files` The file group you need to fill in the code package.
+* `-view` Open view mode.
+  - use view-plugins.
+  - Default plugins:
+    * h5player :  xgplayer@2.9.6
 * `-ip ipstr` Set the listen ip.
   - `-ip 0.0.0.0`,`-ip 127.0.0.1` Example.
 * `-p portstr` or `-port portstr` Set the listen port.
