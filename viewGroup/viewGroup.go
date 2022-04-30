@@ -2,6 +2,7 @@ package viewGroup
 
 import (
 	"embed"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io/fs"
 	"net/http"
@@ -21,10 +22,18 @@ func view_middleware() gin.HandlerFunc {
 }
 func View_routerGroup_init(View_routerGroup *gin.RouterGroup, viewFiles embed.FS) {
 	View_routerGroup.Use(view_middleware())
-	views, err := fs.Sub(viewFiles, "view/h5player")
-	if err != nil {
-		panic(err)
+	views := []string{}
+	de, _ := viewFiles.ReadDir("view")
+	for _, e := range de {
+		if e.IsDir() {
+			views = append(views, e.Name())
+		}
 	}
-	View_routerGroup.StaticFS("/h5player", http.FS(views))
-
+	for _, plugin := range views {
+		view, err := fs.Sub(viewFiles, fmt.Sprintf("view/%s", plugin))
+		if err != nil {
+			panic(err)
+		}
+		View_routerGroup.StaticFS(fmt.Sprintf("/%s", plugin), http.FS(view))
+	}
 }

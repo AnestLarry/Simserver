@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photo Viewer - Simserver</title>
+  <style>
+      body + body * {
+          margin: 0;
+          padding: 0;
+      }
+
+      #url {
+          width: 100%;
+          font-size: larger;
+      }
+
+      #left {
+          float: left;
+          background-color: #aa3;
+          width: 10%;
+          display: inline-block;
+          overflow: hidden;
+      }
+
+      #left ul {
+          margin: 0;
+          padding: 0;
+      }
+
+      #left li {
+          margin: 5 0;
+          list-style: none;
+      }
+
+      .curli {
+          background-color: #aaa;
+      }
+
+      #left li:hover {
+          background-color: #808080;
+      }
+
+      #right {
+          min-height: 100px;
+          float: right;
+          background-color: #354;
+          width: 88%;
+          display: inline-block;
+      }
+
+      #right img {
+          margin: 0 auto;
+          max-height: 95vh;
+          max-width: 100%;
+      }
+
+      .leftS {
+          height: 0 !important;
+          width: 0 !important;
+      }
+
+      .rightL {
+          height: 100% !important;
+          width: 100% !important;
+      }
+  </style>
+</head>
+<body>
+<input id="url" value="/" onblur="updateData(this)"/>
+<div class="all">
+  <div id="left">
+    <ul id="leftUl"></ul>
+  </div>
+  <div id="right" onmouseleave="LargePhotoMode(false)">
+    <img id="show" src="#" onclick="nextImg()" onmouseover="LargePhotoMode(true)">
+  </div>
+</div>
+<script>
+    var baseUrl = window.location.protocol + "//" + window.location.host;
+    var fileList = [];
+    var showIndex = 0;
+    if (window.location.search.length !== 0) {
+        var path = window.location.search.indexOf("path")+5;
+        if (window.location.search.indexOf("&", path) === -1) {
+            document.getElementById("url").value = "/" + window.location.search.substring(path);
+        } else {
+            document.getElementById("url").value = "/" + window.location.search.substring(path, window.location.search.indexOf("&", path));
+        }
+    }
+
+    function updateData(u) {
+        var imgExt = ["png", "jpg", "jpeg", "webp", "gif","bmp"]
+        var url = baseUrl + "/dl/ls" + u.value;
+        var data = JSON.parse(httpGet(url));
+        fileList = [];
+        showIndex = 0
+        var lU = document.getElementById("leftUl");
+        lU.innerHTML = "";
+        data["fileList"].sort(function (a, b) {
+            if (a.Name.length !== b.Name.length) {
+                return a.Name.length < b.Name.length ? -1 : 1;
+            } else {
+                return a.Name.substring(0, a.Name.lastIndexOf(".")) < b.Name.substring(0, b.Name.lastIndexOf(".")) ? a : b;
+            }
+        });
+        for (let file_i = 0; file_i < data["fileList"].length; file_i++) {
+            let file = data["fileList"][file_i];
+            for (let ei = 0; ei < imgExt.length; ei++) {
+                if (file.Name.toLowerCase().endsWith(imgExt[ei])) {
+                    var n = document.createElement("li");
+                    n.setAttribute("i", file_i.toString());
+                    n.innerText = file["Name"];
+                    n.setAttribute("onclick", "updateImg(" + fileList.length + ")")
+                    lU.appendChild(n);
+                    fileList.push(file);
+                    break;
+                }
+            }
+        }
+
+    }
+
+    function updateImg(i) {
+        showIndex = i;
+        document.getElementById("show").src = baseUrl + fileList[i].Path;
+        document.getElementById("show").style.height = window.innerHeight;
+        var lis = document.getElementById("left").getElementsByTagName("li");
+        for (let i = 0; i < lis.length; i++) {
+            lis[i].setAttribute("class", i === showIndex ? "curli" : "");
+        }
+    }
+
+    function nextImg() {
+        if (showIndex < fileList.length) {
+            updateImg(++showIndex);
+        } else {
+            showIndex = 0;
+            updateImg(showIndex);
+        }
+    }
+
+    function LargePhotoMode(b) {
+        if (b) {
+            document.getElementById("url").setAttribute("class","leftS");
+            document.getElementById("left").setAttribute("class", "leftS");
+            document.getElementById("right").setAttribute("class", "rightL");
+        } else {
+            document.getElementById("url").setAttribute("class","");
+            document.getElementById("left").setAttribute("class", "");
+            document.getElementById("right").setAttribute("class", "");
+        }
+    }
+
+    function httpGet(theUrl) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", theUrl, false); // false for synchronous request
+        xmlHttp.send(null);
+        return xmlHttp.responseText;
+    }
+</script>
+</body>
+</html>

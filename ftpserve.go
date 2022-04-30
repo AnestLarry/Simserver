@@ -2,7 +2,7 @@ package main
 
 import (
 	"Simserver/Libs"
-	"Simserver/config"
+	argsConfig "Simserver/config"
 	"Simserver/downloadGroup"
 	"Simserver/uploadGroup"
 	"Simserver/viewGroup"
@@ -20,7 +20,7 @@ import (
 var (
 	log_file_open = false
 	https_open    = false
-	Version       = "Spr, 2022"
+	Version       = "Sum, 2022"
 )
 
 var (

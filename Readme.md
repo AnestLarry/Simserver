@@ -86,8 +86,9 @@ explain for commands.
       * `Files` The file group you need to fill in the code package.
 * `-view` Open view mode.
   - use view-plugins.
-  - Default plugins:
+  - Build-in plugins:
     * h5player :  xgplayer@2.9.6
+    * photoViewer : easy to show photos which in a folder
 * `-ip ipstr` Set the listen ip.
   - `-ip 0.0.0.0`,`-ip 127.0.0.1` Example.
 * `-p portstr` or `-port portstr` Set the listen port.
