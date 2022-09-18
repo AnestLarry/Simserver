@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Simserver</title>
+    <style>
+        #panel{
+            width: 45%;
+            font-size: x-large;
+            margin:  15% auto;
+        }
+    </style>
 </head>
-<body>
-<form action="/upload/" method="post" enctype="multipart/form-data">
-    Files: <input type="file" name="files" multiple><br><br>
-    <input type="submit" value="Submit">
-</form>
+<div id="panel">
+    <form action="/upload/" method="post" enctype="multipart/form-data">
+        Files: <input type="file" style="padding: 5px;display: inline-block;border: red 1px solid;width: 300px;height: 50px" name="files" multiple><br><br>
+        <input type="submit" style="width: 100%;height: 70px" value="Submit">
+    </form>
+</div>
 </body>
 </html>
