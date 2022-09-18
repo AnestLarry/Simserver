@@ -29,6 +29,7 @@ var (
 type ItemField struct {
 	Name string
 	Path string
+	Size float32
 }
 
 type DownloadCodeItem struct {
@@ -135,9 +136,9 @@ func getFilesLists(path, Request_URL_Path string) [][]ItemField {
 	files, _ := ioutil.ReadDir(path)
 	for _, file := range files {
 		if file.IsDir() {
-			res[0] = append(res[0], ItemField{file.Name(), Request_URL_Path + "/" + file.Name()})
+			res[0] = append(res[0], ItemField{file.Name(), Request_URL_Path + "/" + file.Name(), 0.0})
 		} else {
-			res[1] = append(res[1], ItemField{file.Name(), "/dl/n/" + path + "/" + file.Name()})
+			res[1] = append(res[1], ItemField{file.Name(), "/dl/n/" + path + "/" + file.Name(), float32(file.Size()) / 1048576}) //MB
 		}
 	}
 	for resI := range res {

@@ -49,8 +49,16 @@
       padding: 3px;
       font-size: large;
     }
-    ul li a:hover {
+    ul li:hover {
       background-color: #808080;
+    }
+    .fls li a div:first-child{
+        float: left;
+        width: 50%;
+    }
+    .fls li a div:last-child{
+        float: right;
+        width: 50%;
     }
   </style>
 </head>
@@ -70,7 +78,7 @@
   </ul>
   <ul class="fls">
     <h3>Files:</h3>{{ range $i,$v := .fileList }}
-    <li><a href='{{$v.Path}}' download="{{$v.Name}}">{{$v.Name}}</a></li>
+    <li><a href='{{$v.Path}}' download="{{$v.Name}}"><div>{{$v.Name}}</div><div>{{$v.Size}} MB</div></a></li>
     {{ end }}
   </ul>
   {{else}} {{end}}
