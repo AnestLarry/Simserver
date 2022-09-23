@@ -20,8 +20,9 @@ func view_middleware() gin.HandlerFunc {
 		}
 	}
 }
-func View_routerGroup_init(View_routerGroup *gin.RouterGroup, viewFiles embed.FS) {
-	View_routerGroup.Use(view_middleware())
+func View_routerGroup_init(View_routerGroup *gin.Engine, viewFiles embed.FS) {
+	routerPage := View_routerGroup.Group("/view")
+	routerPage.Use(view_middleware())
 	views := []string{}
 	de, _ := viewFiles.ReadDir("view")
 	for _, e := range de {
@@ -34,6 +35,6 @@ func View_routerGroup_init(View_routerGroup *gin.RouterGroup, viewFiles embed.FS
 		if err != nil {
 			panic(err)
 		}
-		View_routerGroup.StaticFS(fmt.Sprintf("/%s", plugin), http.FS(view))
+		routerPage.StaticFS(fmt.Sprintf("/%s", plugin), http.FS(view))
 	}
 }

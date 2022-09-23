@@ -18,19 +18,20 @@ var (
 
 func upload_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.FullPath()[7:]
-		pathDict := map[string]bool{"/": Upload_open, "/text": Upload_text_open}
-		v, ok := pathDict[path]
+		pathDict := map[string]bool{"/upload/": Upload_open, "/api/upload/": Upload_open, "/upload/text": Upload_text_open, "/api/upload/text": Upload_text_open}
+		v, ok := pathDict[c.FullPath()]
 		if !ok || !v {
-			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", strings.Trim(c.FullPath(), "/"))})
+			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})
 			c.Abort()
 		}
 	}
 }
 
-func Upload_routerGroup_init(Uploader_routerGroup *gin.RouterGroup, staticFiles embed.FS) {
-	Uploader_routerGroup.Use(upload_middleware())
-	Uploader_routerGroup.GET("/", func(c *gin.Context) {
+func Upload_routerGroup_init(Uploader_routerGroup *gin.Engine, staticFiles embed.FS) {
+	routerPage, routerApi := Uploader_routerGroup.Group("/upload"), Uploader_routerGroup.Group("/api/upload")
+	routerPage.Use(upload_middleware())
+	routerApi.Use(upload_middleware())
+	routerPage.GET("/", func(c *gin.Context) {
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.Stream(func(w io.Writer) bool {
 			file, _ := staticFiles.ReadFile("static/upload.html")
@@ -38,7 +39,7 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.RouterGroup, staticFiles 
 			return false
 		})
 	})
-	Uploader_routerGroup.POST("/", func(c *gin.Context) {
+	routerApi.POST("/", func(c *gin.Context) {
 		form, err := c.MultipartForm()
 		if err != nil {
 			c.JSON(500, gin.H{"message": "got file error."})
@@ -57,7 +58,8 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.RouterGroup, staticFiles 
 		c.JSON(200, gin.H{"message": "OK"})
 
 	})
-	Uploader_routerGroup.GET("/text", func(c *gin.Context) {
+
+	routerPage.GET("/text", func(c *gin.Context) {
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.Stream(func(w io.Writer) bool {
 			file, _ := staticFiles.ReadFile("static/uploadText.html")
@@ -65,7 +67,7 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.RouterGroup, staticFiles 
 			return false
 		})
 	})
-	Uploader_routerGroup.POST("/text", func(c *gin.Context) {
+	routerApi.POST("/text", func(c *gin.Context) {
 		text := c.PostForm("text")
 		f, err := os.Create(fmt.Sprintf("./upload/%s.txt", time.Now().Format("2006-01-02--15-04-05")))
 		if err != nil || text == "" {

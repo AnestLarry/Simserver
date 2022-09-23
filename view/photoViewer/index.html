@@ -90,7 +90,7 @@
 
     function updateData(u) {
         var imgExt = ["png", "jpg", "jpeg", "webp", "gif","bmp"]
-        var url = baseUrl + "/dl/ls" + u.value;
+        var url = baseUrl + "/api/dl/ls" + u.value;
         var data = JSON.parse(httpGet(url));
         fileList = [];
         showIndex = 0

@@ -6,7 +6,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
@@ -38,14 +37,16 @@ type DownloadCodeItem struct {
 	Files []string `json:"Files"`
 }
 
-func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, staticFiles embed.FS, r *gin.Engine) {
+func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine, staticFiles embed.FS) {
+	routerPage, routerApi := Downloader_routerGroup.Group("/dl"), Downloader_routerGroup.Group("/api/dl")
 	if DownloadCode_open {
 		LoadDownloadCodeJson()
 	}
-	t, _ := template.ParseFS(staticFiles, "static/lists.html")
-	r.SetHTMLTemplate(t)
-	Downloader_routerGroup.Use(download_middleware())
-	Downloader_routerGroup.GET("/n/*path", func(c *gin.Context) {
+
+	routerPage.Use(download_middleware())
+	routerApi.Use(download_middleware())
+
+	routerApi.GET("/n/*path", func(c *gin.Context) {
 		fileName := c.Param("path")[1:]
 		if Libs.LibsXIsFile(fileName) {
 			c.File(fileName)
@@ -53,15 +54,15 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 			c.JSON(404, gin.H{"message": "Not file found."})
 		}
 	})
-	Downloader_routerGroup.GET("/ls/*path", func(c *gin.Context) {
+	routerApi.GET("/ls/*path", func(c *gin.Context) {
 		ls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
 		c.JSON(200, gin.H{"folderList": ls[0], "fileList": ls[1]})
 	})
-	Downloader_routerGroup.GET("/dls/*path", func(c *gin.Context) {
+	routerPage.GET("/dls/*path", func(c *gin.Context) {
 		dls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
 		c.HTML(200, "lists.html", gin.H{"type": "dls", "folderList": dls[0], "fileList": dls[1]})
 	})
-	Downloader_routerGroup.GET("/zip/*path", func(c *gin.Context) {
+	routerApi.GET("/zip/*path", func(c *gin.Context) {
 		c.Writer.Header().Set("Content-type", "application/octet-stream")
 		path := c.Param("path")[1:]
 		path = strings.ReplaceAll(path, "/", "\\")
@@ -76,7 +77,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 					newPath := strings.ReplaceAll(p, path, "")
 					newPath = strings.ReplaceAll(newPath, "\\", "/")
 					if newPath[0] == '/' {
-						newPath = newPath[2:]
+						newPath = newPath[1:]
 					}
 					file, _ := os.Open(p)
 					f, _ := ar.Create(newPath)
@@ -88,7 +89,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 			return false
 		})
 	})
-	Downloader_routerGroup.GET("/downloadCode/*dCode", func(c *gin.Context) {
+	routerApi.GET("/downloadCode/*dCode", func(c *gin.Context) {
 		dCode := c.Param("dCode")[1:]
 		dCodeItem, ok := DownloadCodeMap[dCode]
 		if !ok {
@@ -121,8 +122,8 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.RouterGroup, static
 
 func download_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.FullPath()[4:strings.LastIndex(c.FullPath(), "/")]
-		pathDict := map[string]bool{"ls": Ls_open, "dls": Dls_open, "zip": Zip_open, "downloadCode": DownloadCode_open, "n": true}
+		path := c.FullPath()[:strings.LastIndex(c.FullPath(), "/")]
+		pathDict := map[string]bool{"/api/dl/ls": Ls_open, "/dl/dls": Dls_open, "/api/dl/zip": Zip_open, "/api/dl/downloadCode": DownloadCode_open, "/api/dl/n": true}
 		v, ok := pathDict[path]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", path)})
@@ -138,7 +139,7 @@ func getFilesLists(path, Request_URL_Path string) [][]ItemField {
 		if file.IsDir() {
 			res[0] = append(res[0], ItemField{file.Name(), Request_URL_Path + "/" + file.Name(), 0.0})
 		} else {
-			res[1] = append(res[1], ItemField{file.Name(), "/dl/n/" + path + "/" + file.Name(), float32(file.Size()) / 1048576}) //MB
+			res[1] = append(res[1], ItemField{file.Name(), "/api/dl/n/" + path + "/" + file.Name(), float32(file.Size()) / 1048576}) //MB
 		}
 	}
 	for resI := range res {

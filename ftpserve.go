@@ -8,6 +8,7 @@ import (
 	"Simserver/viewGroup"
 	"embed"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
@@ -144,6 +145,8 @@ Task:
 	}
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
+	t, _ := template.ParseFS(staticFiles, "static/lists.html")
+	r.SetHTMLTemplate(t)
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		r := gin.H{"method": param.Method, "StatusCode": param.StatusCode, "ClientIP": param.ClientIP,
 			"TimeStamp": param.TimeStamp.Format(time.RFC1123), "Path": param.Path, "Request.Proto": param.Request.Proto,
@@ -200,11 +203,11 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 
 func routerGroup_init(r *gin.Engine) {
 	// Uploader routerGroup
-	uploadGroup.Upload_routerGroup_init(r.Group("/upload"), staticFiles)
+	uploadGroup.Upload_routerGroup_init(r, staticFiles)
 	// Downloader routerGroup
-	downloadGroup.Downloader_routerGroup_init(r.Group("/dl"), staticFiles, r)
+	downloadGroup.Downloader_routerGroup_init(r, staticFiles)
 	// View routerGroup
-	viewGroup.View_routerGroup_init(r.Group("/view"), viewFiles)
+	viewGroup.View_routerGroup_init(r, viewFiles)
 }
 
 func restoreFileName() {
