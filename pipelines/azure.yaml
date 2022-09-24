@@ -1,11 +1,11 @@
 strategy:
   matrix:
     windows:
-      imageName: 'vs2017-win2016'
+      imageName: 'windows-2022'
     mac:
       imageName: 'macOS-11'
     linux:
-      imageName: 'ubuntu-18.04'
+      imageName: 'ubuntu-22.04'
 
 trigger:
 - none
