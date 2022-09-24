@@ -174,6 +174,7 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	downloadGroup.DownloadCode_open = acs.DownloadCode
 	uploadGroup.Upload_text_open = acs.UploadText
 	uploadGroup.Upload_open = acs.Upload
+	viewGroup.View_open = acs.View
 	log_file_open = acs.Log
 	if acs.Ip != "" {
 		ip = acs.Ip
@@ -190,7 +191,8 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 			fmt.Println("config File:\nhttps args nums error.")
 		}
 	}
-	fmt.Printf("ls:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n", acs.Ls, acs.Zip, acs.DownloadCode, acs.Upload, acs.UploadText, acs.Log, https_open)
+	fmt.Printf("ls:%v, view:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n",
+		acs.Ls, acs.View, acs.Zip, acs.DownloadCode, acs.Upload, acs.UploadText, acs.Log, https_open)
 }
 
 func routerGroup_init(r *gin.Engine) {

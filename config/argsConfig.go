@@ -17,6 +17,7 @@ type ArgConfigStruct struct {
 	Log          bool     `json:"log"`
 	Ip           string   `json:"ip"`
 	Port         string   `json:"port"`
+	View         bool     `json:"view"`
 }
 
 func ArgConfigInit() ArgConfigStruct {
