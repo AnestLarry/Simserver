@@ -13,7 +13,6 @@ Tips:
  v  - get version
 Mode:
  ls  - open ls function
- dls  - add downloadGroup links with the ls function's list
  upload  - allow user upload files to host
  uploadText  - allow user fill textarea to save text in txt
  zip  - allow zip dir for downloadGroup (DANGER!)
@@ -30,7 +29,7 @@ Task:
 ```
 
 explain for commands.
-* Normally, you can download file with `ip:port/dl/n/filePath`
+* Normally, you can download file with `ip:port/api/dl/n/filePath`
     - `ip` It is the ip you set or default `0.0.0.0` (below omit)
     - `port` It is the port you set or default `5000` (below omit)
     - `filePath` It is a path for your file.
@@ -39,12 +38,11 @@ explain for commands.
 * `-h` The above help tips are displayed.
 * `-v` Print the binary version.
 * `-ls` Open ls mode.
-  - `ip:port/dl/ls/folderPath` Open this URL to view the file list corresponding to the path.
+  - `ip:port/api/dl/ls/folderPath` Open this URL to view the file list corresponding to the path.
     * `folderPath` It is a path for your folder.
       - `C:\\Users\\Administrator\\Desktop` Example for win.
       - `/home/root/desktop` Example for Linux.
-* `-dls` Open dls mode.(dls: `ls` with download function)
-    - `ip:port/dl/dls/folderPath` Open this URL to get the file list corresponding with download link to the path.
+
 * `-upload` Open upload mode.
   - `ip:port/upload/` Open this URL to get the upload page. It can upload lots of files once.
     * It will change upload file's extension name.
@@ -52,7 +50,7 @@ explain for commands.
   - `ip:port/upload/text` Open this URL to get the upload text page. It can upload text without a txt file.
 * `-zip` Open zip mode.
   - `ip:port/dl/zip/folderPath` Open this URL to download folder with zip format package.
-* `https` use https.
+* `-https` use https.
   - `-https server.crt server.key` Example for Win
   - `-https server.pem server.key` Example for Linux
     * You can get crt or key from openssl.
@@ -89,6 +87,7 @@ explain for commands.
   - Build-in plugins:
     * h5player :  xgplayer@2.9.6
     * photoViewer : easy to show photos which in a folder
+    * l : view of folder(origin `dls`)
 * `-ip ipstr` Set the listen ip.
   - `-ip 0.0.0.0`,`-ip 127.0.0.1` Example.
 * `-p portstr` or `-port portstr` Set the listen port.
@@ -97,19 +96,20 @@ explain for commands.
   - `config.json` Example.
     * ```json
       {
-      "ls": true,
-      "dls": true,
-      "downloadCode": true,
-      "zip": true,
-      "upload": true,
-      "uploadText": true,
-      "ip": "0.0.0.0",
-      "port": "5000",
-      "https": ["Simserver.cer", "Simserver.pk"]
+          "ls": true,
+          "zip": false,
+          "log": true,
+          "upload": true,
+          "uploadText": true,
+          "downloadCode": true,
+          "https": ["Simserver.cer", "Simserver.pk"],
+          "ip": "0.0.0.0",
+          "port": "5000",
+          "view": true
       }
       ```
     * You only have to set some args you want, the other will be set to default.
-* `-RSUN` reset files which in upload folder to origin's name.
+* `-RFN` reset files which in upload folder to origin's name.
 
 ## Built With
 
