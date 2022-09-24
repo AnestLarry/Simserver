@@ -8,7 +8,6 @@ import (
 	"Simserver/viewGroup"
 	"embed"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
@@ -44,7 +43,6 @@ func main() {
  v  - get version
 Mode:
  ls  - open ls function
- dls  - add downloadGroup links with the ls function's list
  upload  - allow user upload files to host
  uploadText  - allow user fill textarea to save text in txt
  zip  - allow zip dir for downloadGroup (DANGER!)
@@ -65,9 +63,6 @@ Task:
 			case "ls", "-ls":
 				fmt.Println(" -  ls mode on.")
 				downloadGroup.Ls_open = true
-			case "dls", "-dls":
-				fmt.Println(" -  dls mode on.")
-				downloadGroup.Dls_open = true
 			case "ip", "-ip":
 				i++
 				ip = os.Args[i]
@@ -145,8 +140,6 @@ Task:
 	}
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	t, _ := template.ParseFS(staticFiles, "static/lists.html")
-	r.SetHTMLTemplate(t)
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		r := gin.H{"method": param.Method, "StatusCode": param.StatusCode, "ClientIP": param.ClientIP,
 			"TimeStamp": param.TimeStamp.Format(time.RFC1123), "Path": param.Path, "Request.Proto": param.Request.Proto,
@@ -177,7 +170,6 @@ Task:
 
 func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	downloadGroup.Ls_open = acs.Ls
-	downloadGroup.Dls_open = acs.Dls
 	downloadGroup.Zip_open = acs.Zip
 	downloadGroup.DownloadCode_open = acs.DownloadCode
 	uploadGroup.Upload_text_open = acs.UploadText
@@ -198,7 +190,7 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 			fmt.Println("config File:\nhttps args nums error.")
 		}
 	}
-	fmt.Printf("ls:%v, dls:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n", acs.Ls, acs.Dls, acs.Zip, acs.DownloadCode, acs.Upload, acs.UploadText, acs.Log, https_open)
+	fmt.Printf("ls:%v, zip:%v, downCode:%v\nupload:%v, uploadText:%v\nlog:%v, https:%v\n", acs.Ls, acs.Zip, acs.DownloadCode, acs.Upload, acs.UploadText, acs.Log, https_open)
 }
 
 func routerGroup_init(r *gin.Engine) {

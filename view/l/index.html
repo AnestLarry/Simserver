@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simserver</title>
+  <style>
+      #list {
+          width: 56%;
+          margin: 0 auto;
+      }
+
+      ul li {
+          margin: 3px 5px 0 0;
+          width: 40%;
+          float: left;
+          display: block;
+          text-align: center;
+          list-style: none;
+      }
+
+      @media screen and (max-width: 600px) {
+          #list {
+              width: 93%;
+              margin: 0 auto;
+          }
+
+          .fls li {
+              width: 95%;
+              float: none;
+              display: inline-block;
+          }
+      }
+
+      ul {
+          clear: both;
+      }
+
+      .fls li:nth-child(2n-1) {
+          border: blue solid 3px;
+          clear: both;
+      }
+
+      .fls li:nth-child(2n) {
+          border: red solid 3px;
+      }
+
+      ul li a {
+          height: 100%;
+          text-decoration: none;
+          word-wrap: break-word;
+          outline: none;
+          color: black;
+          display: block;
+          padding: 3px;
+          font-size: large;
+      }
+
+      ul li:hover {
+          background-color: #808080;
+      }
+
+      .fls li a div:first-child {
+          float: left;
+          width: 50%;
+      }
+
+      .fls li a div:last-child {
+          float: right;
+          width: 50%;
+      }
+  </style>
+</head>
+<body>
+<input id="url" value="/" onblur="updateData(this)"/>
+<div id="list">
+  <h1>Items:</h1>
+  <ul>
+    <li>
+      <a onclick="back();">..</a>
+    </li>
+  </ul>
+  <div style="clear: both"></div>
+  <h3>Folders:</h3>
+  <ul class="fls" id="folderList">
+  </ul>
+  <div style="clear: both"></div>
+  <h3>Files:</h3>
+  <ul class="fls" id="fileList">
+  </ul>
+</div>
+<script>
+    var baseUrl = window.location.protocol + "//" + window.location.host;
+
+    function updateData(u) {
+        var url = baseUrl + "/api/dl/ls" + u.value;
+        var data = JSON.parse(httpGet(url));
+        var fileListNode = document.getElementById("fileList");
+        var folderListNode = document.getElementById("folderList");
+        fileListNode.innerHTML = "";
+        folderListNode.innerHTML = "";
+        if (data["folderList"] !== null) {
+            data["folderList"].sort(function (a, b) {
+                return a.Name < b.Name ? a : b;
+            });
+            data["folderList"].forEach((v, i) => {
+                var n = document.createElement("li");
+                var a = document.createElement("a");
+                a.setAttribute("target", data["folderList"][i]["Path"]);
+                a.onclick = changePath;
+                a.innerText = data["folderList"][i]["Name"];
+                n.appendChild(a);
+                folderListNode.appendChild(n);
+            });
+        }
+        if (data["fileList"] !== null) {
+            data["fileList"].sort(function (a, b) {
+                return a.Name < b.Name ? a : b;
+            });
+            data["fileList"].forEach((v, i) => {
+                var n = document.createElement("li");
+                var a = document.createElement("a");
+                var div_name = document.createElement("div");
+                var div_size = document.createElement("div");
+                a.href = data["fileList"][i]["Path"];
+                a.download = data["fileList"][i]["Name"];
+                div_name.innerText = data["fileList"][i]["Name"];
+                div_size.innerText = data["fileList"][i]["Size"] + " MB";
+                a.appendChild(div_name);
+                a.appendChild(div_size);
+                n.appendChild(a);
+                fileListNode.appendChild(n);
+            });
+        }
+    }
+
+    function changePath() {
+        document.getElementById("url").value = this.getAttribute("target");
+        updateData(document.getElementById("url"));
+    }
+
+    function back() {
+        var url = document.getElementById("url").value;
+        url.replace(/\/+$/);
+        document.getElementById("url").value = url.substring(0, url.lastIndexOf("/"));
+        updateData(document.getElementById("url"));
+    }
+
+    function httpGet(theUrl) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", theUrl, false); // false for synchronous request
+        xmlHttp.send(null);
+        return xmlHttp.responseText;
+    }
+</script>
+</body>
+
+</html>

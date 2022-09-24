@@ -19,7 +19,6 @@ import (
 
 var (
 	Ls_open           = false
-	Dls_open          = false
 	Zip_open          = false
 	DownloadCode_open = false
 	DownloadCodeMap   = map[string]DownloadCodeItem{}
@@ -57,10 +56,6 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine, staticFiles
 	routerApi.GET("/ls/*path", func(c *gin.Context) {
 		ls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
 		c.JSON(200, gin.H{"folderList": ls[0], "fileList": ls[1]})
-	})
-	routerPage.GET("/dls/*path", func(c *gin.Context) {
-		dls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
-		c.HTML(200, "lists.html", gin.H{"type": "dls", "folderList": dls[0], "fileList": dls[1]})
 	})
 	routerApi.GET("/zip/*path", func(c *gin.Context) {
 		c.Writer.Header().Set("Content-type", "application/octet-stream")
@@ -123,7 +118,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine, staticFiles
 func download_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()[:strings.LastIndex(c.FullPath(), "/")]
-		pathDict := map[string]bool{"/api/dl/ls": Ls_open, "/dl/dls": Dls_open, "/api/dl/zip": Zip_open, "/api/dl/downloadCode": DownloadCode_open, "/api/dl/n": true}
+		pathDict := map[string]bool{"/api/dl/ls": Ls_open, "/api/dl/zip": Zip_open, "/api/dl/downloadCode": DownloadCode_open, "/api/dl/n": true}
 		v, ok := pathDict[path]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", path)})
@@ -137,9 +132,9 @@ func getFilesLists(path, Request_URL_Path string) [][]ItemField {
 	files, _ := ioutil.ReadDir(path)
 	for _, file := range files {
 		if file.IsDir() {
-			res[0] = append(res[0], ItemField{file.Name(), Request_URL_Path + "/" + file.Name(), 0.0})
+			res[0] = append(res[0], ItemField{file.Name(), fmt.Sprintf("/%s/%s", path, file.Name()), 0.0})
 		} else {
-			res[1] = append(res[1], ItemField{file.Name(), "/api/dl/n/" + path + "/" + file.Name(), float32(file.Size()) / 1048576}) //MB
+			res[1] = append(res[1], ItemField{file.Name(), fmt.Sprintf("/api/dl/n/%s/%s", path, file.Name()), float32(file.Size()) / 1048576}) //MB
 		}
 	}
 	for resI := range res {
