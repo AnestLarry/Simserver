@@ -3,9 +3,10 @@ package viewGroup
 import (
 	"embed"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io/fs"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -22,7 +23,9 @@ func view_middleware() gin.HandlerFunc {
 }
 func View_routerGroup_init(View_routerGroup *gin.Engine, viewFiles embed.FS) {
 	routerPage := View_routerGroup.Group("/view")
+	routerApi := View_routerGroup.Group("api/view")
 	routerPage.Use(view_middleware())
+	routerApi.Use(view_middleware())
 	views := []string{}
 	de, _ := viewFiles.ReadDir("view")
 	for _, e := range de {
@@ -30,6 +33,9 @@ func View_routerGroup_init(View_routerGroup *gin.Engine, viewFiles embed.FS) {
 			views = append(views, e.Name())
 		}
 	}
+	routerApi.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{"message": "Ok", "views": views})
+	})
 	for _, plugin := range views {
 		view, err := fs.Sub(viewFiles, fmt.Sprintf("view/%s", plugin))
 		if err != nil {
