@@ -98,7 +98,14 @@
     var baseUrl = window.location.protocol + "//" + window.location.host;
     var fileListNode = document.getElementById("fileList");
     var folderListNode = document.getElementById("folderList");
-
+    function init() {
+        var path = localStorage.getItem("path");
+        if(path !==null){
+            document.getElementById("url").value = path;
+            updateData(document.getElementById("url"));
+        }
+    }
+    init();
     function updateData(u) {
         var url = baseUrl + "/api/dl/ls" + u.value;
         var data = JSON.parse(httpGet(url));
@@ -140,8 +147,8 @@
                     fileListNode.appendChild(n);
                 });
             })(data), 0);
-
         }
+        localStorage.setItem("path",u.value)
     }
 
     function changePath() {
