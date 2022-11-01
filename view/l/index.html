@@ -1,111 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simserver</title>
-  <style>
-      #list {
-          width: 56%;
-          margin: 0 auto;
-      }
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simserver</title>
+    <style>
+        #list {
+            width: 62%;
+            margin: 0 auto;
+        }
 
-      ul li {
-          margin: 3px 5px 0 0;
-          width: 40%;
-          float: left;
-          display: block;
-          text-align: center;
-          list-style: none;
-      }
+        ul li {
+            margin: 3px 5px 0 0;
+            width: 30%;
+            float: left;
+            display: block;
+            text-align: center;
+            list-style: none;
+        }
 
-      @media screen and (max-width: 600px) {
-          #list {
-              width: 93%;
-              margin: 0 auto;
-          }
+        @media screen and (max-width: 600px) {
+            #list {
+                width: 93%;
+                margin: 0 auto;
+            }
 
-          .fls li {
-              width: 95%;
-              float: none;
-              display: inline-block;
-          }
-      }
+            .fls li {
+                width: 95%;
+                float: none;
+                display: inline-block;
+            }
+        }
 
-      ul {
-          clear: both;
-      }
+        @media screen and (max-width: 800px) {
+            #list{
+                width: 80%;
+            }
 
-      .fls li:nth-child(2n-1) {
-          border: blue solid 3px;
-          clear: both;
-      }
+            ul li {
+                width: 40%;
+            }
+        }
 
-      .fls li:nth-child(2n) {
-          border: red solid 3px;
-      }
+        ul {
+            clear: both;
+        }
 
-      ul li a {
-          height: 100%;
-          text-decoration: none;
-          word-wrap: break-word;
-          outline: none;
-          color: black;
-          display: block;
-          padding: 3px;
-          font-size: large;
-      }
+        .fls li:nth-child(3n-2) {
+            border: green solid 3px;
+        }
 
-      ul li:hover {
-          background-color: #808080;
-      }
+        .fls li:nth-child(3n-1) {
+            border: blue solid 3px;
+        }
 
-      ul li:checked {
-          background-color: #808080;
-      }
+        .fls li:nth-child(3n) {
+            border: red solid 3px;
+        }
 
-      .fls li a div:first-child {
-          float: left;
-          width: 50%;
-      }
+        ul li a {
+            height: 100%;
+            text-decoration: none;
+            word-wrap: break-word;
+            outline: none;
+            color: black;
+            display: block;
+            padding: 3px;
+            font-size: large;
+        }
 
-      .fls li a div:last-child {
-          float: right;
-          width: 50%;
-      }
-  </style>
+        ul li:hover {
+            background-color: #808080;
+        }
+
+        ul li:checked {
+            background-color: #808080;
+        }
+
+        .fls li a div:first-child {
+            float: left;
+            width: 50%;
+        }
+
+        .fls li a div:last-child {
+            float: right;
+            width: 50%;
+        }
+    </style>
 </head>
+
 <body>
 <input id="url" value="/" onblur="updateData(this)"/>
 <div id="list">
-  <h1>Items:</h1>
-  <ul>
-    <li>
-      <a onclick="back();">..</a>
-    </li>
-  </ul>
-  <div style="clear: both"></div>
-  <h3>Folders:</h3>
-  <ul class="fls" id="folderList">
-  </ul>
-  <div style="clear: both"></div>
-  <h3>Files:</h3>
-  <ul class="fls" id="fileList">
-  </ul>
+    <h1>Items:</h1>
+    <ul>
+        <li>
+            <a onclick="back();">..</a>
+        </li>
+    </ul>
+    <div style="clear: both"></div>
+    <h3>Folders:</h3>
+    <ul class="fls" id="folderList">
+    </ul>
+    <div style="clear: both"></div>
+    <h3>Files:</h3>
+    <ul class="fls" id="fileList">
+    </ul>
 </div>
 <script>
     var baseUrl = window.location.protocol + "//" + window.location.host;
     var fileListNode = document.getElementById("fileList");
     var folderListNode = document.getElementById("folderList");
+
     function init() {
         var url = localStorage.getItem("url");
-        if (url !==null) {
-          document.getElementById("url").value = url;
-          updateData(document.getElementById("url"));
+        if (url !== null) {
+            document.getElementById("url").value = url;
+            updateData(document.getElementById("url"));
         }
     }
+
     init();
+
     function updateData(u) {
         var url = baseUrl + "/api/dl/ls" + u.value;
         var data = JSON.parse(httpGet(url));
@@ -149,12 +167,12 @@
                 });
             })(data), 0);
         }
-        localStorage.setItem("url",u.value)
+        localStorage.setItem("url", u.value)
     }
 
     function changePath() {
         document.getElementById("url").value = this.getAttribute("target");
-        localStorage.setItem("prevFolder",this.innerText);
+        localStorage.setItem("prevFolder", this.innerText);
         updateData(document.getElementById("url"));
     }
 
@@ -164,8 +182,8 @@
         document.getElementById("url").value = url.substring(0, url.lastIndexOf("/"));
         updateData(document.getElementById("url"));
         let prevFolder = localStorage.getItem("prevFolder");
-        if (prevFolder!==null){
-            window.scrollTo( 0, document.getElementById(prevFolder).getBoundingClientRect().top+window.scrollY-60);
+        if (prevFolder !== null) {
+            window.scrollTo(0, document.getElementById(prevFolder).getBoundingClientRect().top + window.scrollY - 60);
             localStorage.removeItem("prevFolder");
         }
     }
