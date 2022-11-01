@@ -99,10 +99,10 @@
     var fileListNode = document.getElementById("fileList");
     var folderListNode = document.getElementById("folderList");
     function init() {
-        var path = localStorage.getItem("path");
-        if(path !==null){
-            document.getElementById("url").value = path;
-            updateData(document.getElementById("url"));
+        var url = localStorage.getItem("url");
+        if (url !==null) {
+          document.getElementById("url").value = url;
+          updateData(document.getElementById("url"));
         }
     }
     init();
@@ -121,6 +121,7 @@
                     var a = document.createElement("a");
                     a.setAttribute("target", data["folderList"][i]["Path"]);
                     a.onclick = changePath;
+                    a.id = data["folderList"][i]["Name"];
                     a.innerText = data["folderList"][i]["Name"];
                     n.appendChild(a);
                     folderListNode.appendChild(n);
@@ -148,11 +149,12 @@
                 });
             })(data), 0);
         }
-        localStorage.setItem("path",u.value)
+        localStorage.setItem("url",u.value)
     }
 
     function changePath() {
         document.getElementById("url").value = this.getAttribute("target");
+        localStorage.setItem("prevFolder",this.innerText);
         updateData(document.getElementById("url"));
     }
 
@@ -161,6 +163,11 @@
         url.replace(/\/+$/);
         document.getElementById("url").value = url.substring(0, url.lastIndexOf("/"));
         updateData(document.getElementById("url"));
+        let prevFolder = localStorage.getItem("prevFolder");
+        if (prevFolder!==null){
+            window.scrollTo( 0, document.getElementById(prevFolder).getBoundingClientRect().top+window.scrollY-60);
+            localStorage.removeItem("prevFolder");
+        }
     }
 
     function httpGet(theUrl) {
