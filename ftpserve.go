@@ -20,7 +20,12 @@ import (
 var (
 	log_file_open = false
 	https_open    = false
-	Version       = "Sum, 2022"
+	login         = struct {
+		open     bool
+		account  string
+		password string
+	}{}
+	Version = "Win, 2022"
 )
 
 var (
@@ -50,6 +55,7 @@ Mode:
  log  - put log in file
  downloadCode  - use downloadGroup code to downloadGroup a group file with setting
  view  - use view in running
+ login  - add account password auth for all resources
 Args:
  p / port  - use the port
  ip  - use the ip
@@ -115,6 +121,12 @@ Task:
 				fmt.Println("start parse 'config.json'")
 				loadConfigFromArgsConfigStruct(argsConfig.ArgConfigInit())
 				break ArgsFor
+			case "login", "-login":
+				fmt.Println(" -  login mode on.")
+				login.open = true
+				login.account = os.Args[i+1]
+				login.password = os.Args[i+2]
+				i += 2
 			default:
 				fmt.Println("There is arg(s) cannot parse. Do you need \"-h\" ?")
 				os.Exit(0)
@@ -146,6 +158,9 @@ Task:
 			"Latency": param.Latency, "User-Agent": param.Request.UserAgent(), "ErrorMessage": param.ErrorMessage}
 		return fmt.Sprintf("%v\n", r)
 	}))
+	if login.open {
+		r.Use(gin.BasicAuth(gin.Accounts{login.account: login.password}))
+	}
 	r.Use(gin.Recovery())
 	r.GET("/version", func(c *gin.Context) {
 		c.JSON(200, gin.H{"version": Version})
@@ -196,6 +211,8 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 }
 
 func routerGroup_init(r *gin.Engine) {
+	// global init
+	router_init(r)
 	// Uploader routerGroup
 	uploadGroup.Upload_routerGroup_init(r, staticFiles)
 	// Downloader routerGroup
@@ -231,4 +248,10 @@ func restoreFileName() {
 		}
 	}
 	os.Exit(0)
+}
+
+func router_init(r *gin.Engine) {
+	if login.open {
+		r.Use(gin.BasicAuth(gin.Accounts{login.account: login.password}))
+	}
 }

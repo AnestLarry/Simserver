@@ -18,6 +18,7 @@ type ArgConfigStruct struct {
 	Ip           string   `json:"ip"`
 	Port         string   `json:"port"`
 	View         bool     `json:"view"`
+	Login        []string `json:"login"`
 }
 
 func ArgConfigInit() ArgConfigStruct {
