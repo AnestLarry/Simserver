@@ -191,6 +191,9 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	uploadGroup.Upload_open = acs.Upload
 	viewGroup.View_open = acs.View
 	log_file_open = acs.Log
+	login.open = acs.Login.Open
+	login.account = acs.Login.Account
+	login.password = acs.Login.Password
 	if acs.Ip != "" {
 		ip = acs.Ip
 	}
