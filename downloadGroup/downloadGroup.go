@@ -132,7 +132,7 @@ func getFilesLists(path, Request_URL_Path string) [][]ItemField {
 	files, _ := ioutil.ReadDir(path)
 	for _, file := range files {
 		if file.IsDir() {
-			res[0] = append(res[0], ItemField{file.Name(), fmt.Sprintf("/%s/%s", path, file.Name()), 0.0})
+			res[0] = append(res[0], ItemField{file.Name(), fmt.Sprintf("%s/%s", path, file.Name()), 0.0})
 		} else {
 			res[1] = append(res[1], ItemField{file.Name(), fmt.Sprintf("/api/dl/n/%s/%s", path, file.Name()), float32(file.Size()) / 1048576}) //MB
 		}

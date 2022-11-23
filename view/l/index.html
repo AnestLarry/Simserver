@@ -99,6 +99,9 @@
         <li>
             <a onclick="back();">..</a>
         </li>
+        <li>
+            <a onclick="packFolder();">pack this folder</a>
+        </li>
     </ul>
     <div style="clear: both"></div>
     <h3>Folders:</h3>
@@ -125,7 +128,7 @@
     init();
 
     function updateData(u) {
-        var url = baseUrl + "/api/dl/ls" + u.value;
+        var url = baseUrl + "/api/dl/ls/" + u.value;
         var data = JSON.parse(httpGet(url));
         fileListNode.innerHTML = "";
         folderListNode.innerHTML = "";
@@ -186,6 +189,10 @@
             window.scrollTo(0, document.getElementById(prevFolder).getBoundingClientRect().top + window.scrollY - 60);
             localStorage.removeItem("prevFolder");
         }
+    }
+
+    function packFolder() {
+        window.open(baseUrl+"/api/dl/zip/"+document.getElementById("url").value,"_blank");
     }
 
     function httpGet(theUrl) {
