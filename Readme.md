@@ -20,6 +20,7 @@ Mode:
  log  - put log in file
  downloadCode  - use downloadGroup code to downloadGroup a group file with setting
  view  - use view in running
+ login  - add basic auth for all resources
 Args:
  p / port  - use the port
  ip  - use the ip
@@ -88,6 +89,10 @@ explain for commands.
     * h5player :  xgplayer@2.9.6
     * photoViewer : easy to show photos which in a folder
     * l : view of folder(origin `dls`)
+* `-login` add basic auth for all resources.
+  - `-login account password`
+    - account: string without blank string.
+    - password: string without blank string.
 * `-ip ipstr` Set the listen ip.
   - `-ip 0.0.0.0`,`-ip 127.0.0.1` Example.
 * `-p portstr` or `-port portstr` Set the listen port.
