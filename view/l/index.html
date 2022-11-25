@@ -112,10 +112,21 @@
     <ul class="fls" id="fileList">
     </ul>
 </div>
+<template id="t_folder">
+    <li><a onclick="changePath(this)"></a></li>
+</template>
+<template id="t_file">
+    <li><a>
+            <div></div>
+            <div></div>
+        </a></li>
+</template>
 <script>
-    var baseUrl = window.location.protocol + "//" + window.location.host;
+    const baseUrl = window.location.protocol + "//" + window.location.host;
     var fileListNode = document.getElementById("fileList");
     var folderListNode = document.getElementById("folderList");
+    var tFolder = document.querySelector("#t_folder");
+    var tFile = document.querySelector("#t_file");
 
     function init() {
         var url = localStorage.getItem("url");
@@ -134,48 +145,35 @@
         folderListNode.innerHTML = "";
         if (data["folderList"] !== null) {
             setTimeout(((data) => {
-                data["folderList"].sort(function (a, b) {
-                    return a.Name < b.Name ? a : b;
-                });
+                data["folderList"].sort((a, b)=>  a.Name < b.Name ? a : b);
                 data["folderList"].forEach((v, i) => {
-                    var n = document.createElement("li");
-                    var a = document.createElement("a");
-                    a.setAttribute("target", data["folderList"][i]["Path"]);
-                    a.onclick = changePath;
-                    a.id = data["folderList"][i]["Name"];
-                    a.innerText = data["folderList"][i]["Name"];
-                    n.appendChild(a);
-                    folderListNode.appendChild(n);
+                    var a = tFolder.content.querySelector("a");
+                    a.setAttribute("target", v["Path"]);
+                    a.id = v["Name"];
+                    a.innerText = v["Name"];
+                    folderListNode.appendChild(document.importNode(tFolder.content,true));
                 });
             })(data), 0);
         }
         if (data["fileList"] !== null) {
             setTimeout(((data) => {
-                data["fileList"].sort(function (a, b) {
-                    return a.Name < b.Name ? a : b;
-                });
+                data["fileList"].sort((a, b)=>  a.Name < b.Name ? a : b);
                 data["fileList"].forEach((v, i) => {
-                    var n = document.createElement("li");
-                    var a = document.createElement("a");
-                    var div_name = document.createElement("div");
-                    var div_size = document.createElement("div");
-                    a.href = data["fileList"][i]["Path"];
-                    a.download = data["fileList"][i]["Name"];
-                    div_name.innerText = data["fileList"][i]["Name"];
-                    div_size.innerText = data["fileList"][i]["Size"] + " MB";
-                    a.appendChild(div_name);
-                    a.appendChild(div_size);
-                    n.appendChild(a);
-                    fileListNode.appendChild(n);
+                    var divs = tFile.content.querySelectorAll("div");
+                    divs[0].innerText = v["Name"];
+                    divs[1].innerText = v["Size"] + " MB";
+                    var a = tFile.content.querySelector("a");
+                    a.href = v["Path"];
+                    fileListNode.appendChild(document.importNode(tFile.content, true));
                 });
             })(data), 0);
         }
         localStorage.setItem("url", u.value)
     }
 
-    function changePath() {
-        document.getElementById("url").value = this.getAttribute("target");
-        localStorage.setItem("prevFolder", this.innerText);
+    function changePath(n) {
+        document.getElementById("url").value = n.getAttribute("target");
+        localStorage.setItem("prevFolder", n.innerText);
         updateData(document.getElementById("url"));
     }
 
