@@ -130,10 +130,10 @@
 
     function init() {
         var url = localStorage.getItem("url");
-        if (url !== null) {
+        if (url !== "") {
             document.getElementById("url").value = url;
-            updateData(document.getElementById("url"));
         }
+        updateData(document.getElementById("url"));
     }
 
     init();
