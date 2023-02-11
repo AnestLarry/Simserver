@@ -25,7 +25,7 @@ var (
 		account  string
 		password string
 	}{}
-	Version = "Win, 2022"
+	Version = "Spr, 2023"
 )
 
 var (
