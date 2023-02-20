@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -129,12 +128,16 @@ func download_middleware() gin.HandlerFunc {
 
 func getFilesLists(path, Request_URL_Path string) [][]ItemField {
 	res := make([][]ItemField, 2)
-	files, _ := ioutil.ReadDir(path)
+	files, _ := os.ReadDir(path)
 	for _, file := range files {
 		if file.IsDir() {
-			res[0] = append(res[0], ItemField{file.Name(), fmt.Sprintf("%s/%s", path, file.Name()), 0.0})
+			res[0] = append(res[0], ItemField{file.Name(), fmt.Sprintf("%s%s", path, file.Name()), 0.0})
 		} else {
-			res[1] = append(res[1], ItemField{file.Name(), fmt.Sprintf("/api/dl/n/%s/%s", path, file.Name()), float32(file.Size()) / 1048576}) //MB
+			if info, err := file.Info(); err != nil {
+				return res
+			} else {
+				res[1] = append(res[1], ItemField{file.Name(), fmt.Sprintf("/api/dl/n/%s%s", path, file.Name()), float32(info.Size()) / 1048576}) //MB
+			}
 		}
 	}
 	for resI := range res {
@@ -150,7 +153,7 @@ func LoadDownloadCodeJson() {
 		os.Exit(-1)
 	} else {
 		var downloadCodeJson []DownloadCodeItem
-		downloadCodeFile, err := ioutil.ReadFile("./downloadCodes.json")
+		downloadCodeFile, err := os.ReadFile("./downloadCodes.json")
 		if err != nil {
 			fmt.Println("  open downloadCodes.json fail.")
 			os.Exit(-1)
