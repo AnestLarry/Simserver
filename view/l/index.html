@@ -35,7 +35,7 @@
         }
 
         @media screen and (max-width: 800px) {
-            #list{
+            #list {
                 width: 80%;
             }
 
@@ -132,6 +132,8 @@
         var url = localStorage.getItem("url");
         if (url !== "") {
             document.getElementById("url").value = url;
+        } else {
+            document.getElementById("url").value = "/";
         }
         updateData(document.getElementById("url"));
     }
@@ -145,19 +147,19 @@
         folderListNode.innerHTML = "";
         if (data["folderList"] !== null) {
             setTimeout(((data) => {
-                data["folderList"].sort((a, b)=>  a.Name < b.Name ? a : b);
+                data["folderList"].sort((a, b) => a.Name < b.Name ? a : b);
                 data["folderList"].forEach((v, i) => {
                     var a = tFolder.content.querySelector("a");
                     a.setAttribute("target", v["Path"]);
                     a.id = v["Name"];
                     a.innerText = v["Name"];
-                    folderListNode.appendChild(document.importNode(tFolder.content,true));
+                    folderListNode.appendChild(document.importNode(tFolder.content, true));
                 });
-            })(data), 0);
+            }), 0, data);
         }
         if (data["fileList"] !== null) {
             setTimeout(((data) => {
-                data["fileList"].sort((a, b)=>  a.Name < b.Name ? a : b);
+                data["fileList"].sort((a, b) => a.Name < b.Name ? a : b);
                 data["fileList"].forEach((v, i) => {
                     var divs = tFile.content.querySelectorAll("div");
                     divs[0].innerText = v["Name"];
@@ -166,7 +168,7 @@
                     a.href = v["Path"];
                     fileListNode.appendChild(document.importNode(tFile.content, true));
                 });
-            })(data), 0);
+            }), 0, data);
         }
         localStorage.setItem("url", u.value)
     }
@@ -190,7 +192,7 @@
     }
 
     function packFolder() {
-        window.open(baseUrl+"/api/dl/zip/"+document.getElementById("url").value,"_blank");
+        window.open(baseUrl + "/api/dl/zip/" + document.getElementById("url").value, "_blank");
     }
 
     function httpGet(theUrl) {
