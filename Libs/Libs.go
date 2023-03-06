@@ -3,11 +3,8 @@ package Libs
 import (
 	"bufio"
 	"bytes"
-	"crypto/sha1"
-	"encoding/hex"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -168,12 +165,6 @@ func LibsXRangeInt(args ...int) chan int {
 	return ch
 }
 
-func LibsXClear() {
-	cmd := exec.Command("cmd", "/c", "cls")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-}
-
 // 判断所给路径文件/文件夹是否存在
 func LibsXExists(path string) bool {
 	_, err := os.Stat(path) //os.Stat获取文件信息
@@ -198,34 +189,6 @@ func LibsXIsDir(path string) bool {
 // 判断所给路径是否为文件
 func LibsXIsFile(path string) bool {
 	return !LibsXIsDir(path)
-}
-
-func LibsXSha1File(filePath string) []byte {
-	f, err := os.Open(filePath)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	h := sha1.New()
-	if _, err := io.Copy(h, f); err != nil {
-		log.Fatal(err)
-	}
-	return h.Sum(nil)
-}
-
-func LibsXSha1FileString(filePath string) string {
-	f, err := os.Open(filePath)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	h := sha1.New()
-	if _, err := io.Copy(h, f); err != nil {
-		log.Fatal(err)
-	}
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 func LibsXexecCommand(commandName string, params []string) bool {
