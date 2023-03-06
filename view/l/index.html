@@ -88,11 +88,16 @@
             float: right;
             width: 50%;
         }
+
+        #pwd {
+            border: solid red;
+        }
     </style>
 </head>
 
 <body>
-<input id="url" value="/" onblur="updateData(this)"/>
+<input id="url" value="/" onblur="changeUrl(this)"/>
+<div id="pwd"></div>
 <div id="list">
     <h1>Items:</h1>
     <ul>
@@ -129,64 +134,91 @@
     var tFile = document.querySelector("#t_file");
 
     function init() {
-        var url = localStorage.getItem("url");
-        if (url !== "") {
-            document.getElementById("url").value = url;
+        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+        if (urlStack !== null && Object.keys(urlStack).length > 0) {
+            document.getElementById("url").value = urlStack.join("/");
         } else {
             document.getElementById("url").value = "/";
+            localStorage.setItem("urlStack", JSON.stringify(["/"]));
         }
-        updateData(document.getElementById("url"));
+        updateData();
     }
 
     init();
 
-    function updateData(u) {
-        var url = baseUrl + "/api/dl/ls/" + u.value;
+    function updateData() {
+        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+        var url = "";
+        if (urlStack.length > 1) {
+            url = baseUrl + "/api/dl/ls/" + urlStack.join("/");
+        } else {
+            url = baseUrl + "/api/dl/ls/" + urlStack[0];
+        }
         var data = JSON.parse(httpGet(url));
         fileListNode.innerHTML = "";
         folderListNode.innerHTML = "";
+        if (urlStack.length > 1) {
+            document.getElementById("pwd").innerText = urlStack.join("/")
+        } else {
+            document.getElementById("pwd").innerText = urlStack[0];
+        }
         if (data["folderList"] !== null) {
-            setTimeout(((data) => {
-                data["folderList"].sort((a, b) => a.Name < b.Name ? a : b);
-                data["folderList"].forEach((v, i) => {
-                    var a = tFolder.content.querySelector("a");
-                    a.setAttribute("target", v["Path"]);
-                    a.id = v["Name"];
-                    a.innerText = v["Name"];
-                    folderListNode.appendChild(document.importNode(tFolder.content, true));
-                });
-            }), 0, data);
+            data["folderList"].sort((a, b) => a.Name < b.Name ? a : b);
+            data["folderList"].forEach((v, i) => {
+                var a = tFolder.content.querySelector("a");
+                a.setAttribute("target", v["Path"]);
+                a.id = v["Name"];
+                a.innerText = v["Name"];
+                folderListNode.appendChild(document.importNode(tFolder.content, true));
+            });
         }
         if (data["fileList"] !== null) {
-            setTimeout(((data) => {
-                data["fileList"].sort((a, b) => a.Name < b.Name ? a : b);
-                data["fileList"].forEach((v, i) => {
-                    var divs = tFile.content.querySelectorAll("div");
-                    divs[0].innerText = v["Name"];
-                    divs[1].innerText = v["Size"] + " MB";
-                    var a = tFile.content.querySelector("a");
-                    a.href = v["Path"];
-                    fileListNode.appendChild(document.importNode(tFile.content, true));
-                });
-            }), 0, data);
+            data["fileList"].sort((a, b) => a.Name < b.Name ? a : b);
+            data["fileList"].forEach((v, i) => {
+                var divs = tFile.content.querySelectorAll("div");
+                divs[0].innerText = v["Name"];
+                divs[1].innerText = v["Size"] + " MB";
+                var a = tFile.content.querySelector("a");
+                a.href = v["Path"];
+                fileListNode.appendChild(document.importNode(tFile.content, true));
+            });
         }
-        localStorage.setItem("url", u.value)
     }
 
     function changePath(n) {
-        document.getElementById("url").value = n.getAttribute("target");
+        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+        if (urlStack.length === 1 && urlStack[0] === "/") {
+            urlStack.push(urlStack.pop() + n.innerText);
+        } else if (urlStack.length > 1 || urlStack[0] !== "/") {
+            urlStack.push(n.innerText);
+        } else {
+            urlStack = ["/"];
+        }
+        localStorage.setItem("urlStack", JSON.stringify(urlStack))
         localStorage.setItem("prevFolder", n.innerText);
-        updateData(document.getElementById("url"));
+        updateData();
+    }
+
+    function changeUrl(n) {
+        var url = n.value.substring(n.value.indexOf("/") + 1);
+        var urlStack = [n.value.substring(0, n.value.indexOf("/") + 1)].push(...url.split("/"));
+        localStorage.setItem("urlStack", JSON.stringify(urlStack));
+        updateData();
     }
 
     function back() {
-        var url = document.getElementById("url").value;
-        url.replace(/\/+$/);
-        document.getElementById("url").value = url.substring(0, url.lastIndexOf("/"));
-        updateData(document.getElementById("url"));
-        let prevFolder = localStorage.getItem("prevFolder");
+        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+        if (urlStack.length > 1) {
+            urlStack.pop();
+        } else {
+            urlStack[0] = "/";
+        }
+        localStorage.setItem("urlStack", JSON.stringify(urlStack));
+        updateData();
+        let prevFolder = document.getElementById(localStorage.getItem("prevFolder"));
+        console.log(prevFolder !== null);
         if (prevFolder !== null) {
-            window.scrollTo(0, document.getElementById(prevFolder).getBoundingClientRect().top + window.scrollY - 60);
+            window.scrollTo(0, prevFolder.getBoundingClientRect().top + window.scrollY - 60);
             localStorage.removeItem("prevFolder");
         }
     }
