@@ -89,8 +89,8 @@
     }
 
     function updateData(u) {
-        var imgExt = ["png", "jpg", "jpeg", "webp", "gif","bmp"]
-        var url = baseUrl + "/api/dl/ls" + u.value;
+        var imgExt = ["png", "jpg", "jpeg", "webp", "gif","bmp"];
+        var url = baseUrl + "/api/dl/ls/" + u.value;
         var data = JSON.parse(httpGet(url));
         fileList = [];
         showIndex = 0
@@ -110,7 +110,7 @@
                     var n = document.createElement("li");
                     n.setAttribute("i", file_i.toString());
                     n.innerText = file["Name"];
-                    n.setAttribute("onclick", "updateImg(" + fileList.length + ")")
+                    n.setAttribute("onclick", "updateImg(" + fileList.length + ")");
                     lU.appendChild(n);
                     fileList.push(file);
                     break;
@@ -122,7 +122,7 @@
 
     function updateImg(i) {
         showIndex = i;
-        document.getElementById("show").src = baseUrl + fileList[i].Path;
+        document.getElementById("show").src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + fileList[i].Name;
         document.getElementById("show").style.height = window.innerHeight;
         var lis = document.getElementById("left").getElementsByTagName("li");
         for (let i = 0; i < lis.length; i++) {

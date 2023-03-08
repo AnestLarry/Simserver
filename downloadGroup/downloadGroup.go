@@ -24,9 +24,9 @@ var (
 )
 
 type ItemField struct {
-	Name string
-	Path string
-	Size float32
+	Name    string
+	ModTime int64
+	Size    float32
 }
 
 type DownloadCodeItem struct {
@@ -53,7 +53,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine, staticFiles
 		}
 	})
 	routerApi.GET("/ls/*path", func(c *gin.Context) {
-		ls := getFilesLists(c.Param("path")[1:], c.Request.URL.String())
+		ls := getFilesLists(c.Param("path")[1:])
 		c.JSON(200, gin.H{"folderList": ls[0], "fileList": ls[1]})
 	})
 	routerApi.GET("/zip/*path", func(c *gin.Context) {
@@ -126,17 +126,21 @@ func download_middleware() gin.HandlerFunc {
 	}
 }
 
-func getFilesLists(path, Request_URL_Path string) [][]ItemField {
+func getFilesLists(path string) [][]ItemField {
 	res := make([][]ItemField, 2)
 	files, _ := os.ReadDir(path)
 	for _, file := range files {
 		if file.IsDir() {
-			res[0] = append(res[0], ItemField{file.Name(), fmt.Sprintf("%s%s", path, file.Name()), 0.0})
+			if info, err := file.Info(); err != nil {
+				continue
+			} else {
+				res[0] = append(res[0], ItemField{file.Name(), info.ModTime().UnixMilli(), 0.0}) //MB
+			}
 		} else {
 			if info, err := file.Info(); err != nil {
-				return res
+				continue
 			} else {
-				res[1] = append(res[1], ItemField{file.Name(), fmt.Sprintf("/api/dl/n/%s%s", path, file.Name()), float32(info.Size()) / 1048576}) //MB
+				res[1] = append(res[1], ItemField{file.Name(), info.ModTime().UnixMilli(), float32(info.Size()) / 1048576}) //MB
 			}
 		}
 	}
