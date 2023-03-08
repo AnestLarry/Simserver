@@ -179,7 +179,11 @@
                 divs[0].innerText = v["Name"];
                 divs[1].innerText = v["Size"] + " MB";
                 var a = tFile.content.querySelector("a");
-                a.href = v["Path"];
+                if(urlStack.length === 1 && urlStack[0] === "/"){
+                    a.href = baseUrl + "/api/dl/n//" + v["Name"];
+                } else {
+                    a.href = baseUrl + "/api/dl/n/" + urlStack.join("/") + "/" + v["Name"];
+                }
                 fileListNode.appendChild(document.importNode(tFile.content, true));
             });
         }
