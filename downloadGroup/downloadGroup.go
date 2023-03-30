@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -130,24 +129,15 @@ func getFilesLists(path string) [][]ItemField {
 	res := make([][]ItemField, 2)
 	files, _ := os.ReadDir(path)
 	for _, file := range files {
-		if file.IsDir() {
-			if info, err := file.Info(); err != nil {
-				continue
-			} else {
-				res[0] = append(res[0], ItemField{file.Name(), info.ModTime().UnixMilli(), 0.0}) //MB
-			}
+		if info, err := file.Info(); err != nil {
+			continue
 		} else {
-			if info, err := file.Info(); err != nil {
-				continue
+			if file.IsDir() {
+				res[0] = append(res[0], ItemField{file.Name(), info.ModTime().UnixMilli(), 0.0}) //MB
 			} else {
 				res[1] = append(res[1], ItemField{file.Name(), info.ModTime().UnixMilli(), float32(info.Size()) / 1048576}) //MB
 			}
 		}
-	}
-	for resI := range res {
-		sort.Slice(res[resI], func(i, j int) bool {
-			return strings.ToLower(res[resI][i].Name) < strings.ToLower(res[resI][j].Name)
-		})
 	}
 	return res
 }
