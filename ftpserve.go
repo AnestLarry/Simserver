@@ -10,7 +10,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -133,12 +132,12 @@ func restoreFileName() {
 			os.Exit(0)
 		}
 	}
-	folders, _ := ioutil.ReadDir("./upload")
+	folders, _ := os.ReadDir("./upload")
 	for _, folder := range folders {
 		if !folder.IsDir() {
 			continue
 		}
-		files, _ := ioutil.ReadDir(fmt.Sprintf("./upload/%s", folder.Name()))
+		files, _ := os.ReadDir(fmt.Sprintf("./upload/%s", folder.Name()))
 		for _, file := range files {
 			path := fmt.Sprintf("./upload/%s/%s", folder.Name(), file.Name())
 			if !file.IsDir() && path[len(path)-4:] == "_dat" {

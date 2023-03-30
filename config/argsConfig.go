@@ -3,7 +3,7 @@ package argsConfig
 import (
 	"Simserver/Libs"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -34,7 +34,7 @@ func ArgConfigInit() ArgConfigStruct {
 		panic(err)
 	}
 	defer configJson.Close()
-	byteValue, _ := ioutil.ReadAll(configJson)
+	byteValue, _ := io.ReadAll(configJson)
 	var acs ArgConfigStruct
 	err = json.Unmarshal(byteValue, &acs)
 	if err != nil {
