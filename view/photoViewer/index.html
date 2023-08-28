@@ -16,7 +16,12 @@
     }
 
     #url {
-      width: 100%;
+      width: 80%;
+      font-size: larger;
+    }
+
+    #viewMode{
+      width:17%;
       font-size: larger;
     }
 
@@ -56,7 +61,7 @@
       background-color: #fff;
       width: 78%;
       display: inline-block;
-      padding: 10px;
+      padding: 2px;
       box-sizing: border-box;
       border-radius: 5px;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
@@ -64,8 +69,14 @@
 
     #right img {
       margin: 0 auto;
-      max-height: 95vh;
-      max-width: 100%;
+    }
+
+    .imgWidth1st{
+      width: 100%;
+    }
+
+    .imgHeight1st{
+      height: 100%;
     }
 
     .leftS {
@@ -80,13 +91,26 @@
   </style>
 </head>
 <body>
+  <div id="topNav">
 <input id="url" value="/" onblur="updateData(this)"/>
+<select id="viewMode" multiple onchange="viewModeChange(this)"> 
+  <optgroup label="img rest">
+    <option value="Height">Height 1st</option>
+    <option value="Width">Width 1st</option>
+  </optgroup>
+  <optgroup label="img nums">
+    <option value="img_1">1</option>
+    <option value="img_2">multiple</option>
+  </optgroup>
+</select>
+</div>
+
 <div class="all">
   <div id="left">
     <ul id="leftUl"></ul>
   </div>
-  <div id="right" onmouseleave="LargePhotoMode(false)">
-    <img id="show" src="#" onclick="nextImg()" onmouseover="LargePhotoMode(true)">
+  <div id="right" onmouseleave="LargePhotoMode(false)" onmouseenter="LargePhotoMode(true)">
+    <img id="show" name="showImgs" class="imgHeight1st" src="#" onclick="nextImg()">
   </div>
 </div>
 <script>
@@ -131,7 +155,11 @@
                 }
             }
         }
-
+        {
+          // update chain
+          updateImg(0);
+          viewModeChange(document.getElementById("viewMode"))
+        }
     }
 
     function updateImg(i) {
@@ -155,14 +183,56 @@
 
     function LargePhotoMode(b) {
         if (b) {
-            document.getElementById("url").setAttribute("class","leftS");
+            document.getElementById("topNav").setAttribute("class","leftS");
             document.getElementById("left").setAttribute("class", "leftS");
             document.getElementById("right").setAttribute("class", "rightL");
         } else {
-            document.getElementById("url").setAttribute("class","");
+            document.getElementById("topNav").setAttribute("class","");
             document.getElementById("left").setAttribute("class", "");
             document.getElementById("right").setAttribute("class", "");
         }
+    }
+
+    function viewModeChange(a) {
+      for(let i = 0; i < a.selectedOptions.length; i++){
+        const e = a.selectedOptions[i];
+        switch(e.value){
+          case "Width":
+            for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
+              const element = document.getElementsByName("showImgs")[i];
+              element.setAttribute("class", "imgWidth1st");
+            }
+            break;
+          case "Height":
+          for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
+              const element = document.getElementsByName("showImgs")[i];
+              element.setAttribute("class", "imgHeight1st");
+            }
+            break;
+          case "img_1":
+            console.log("clear img")
+            for (let i = 1; i < document.getElementsByName("showImgs").length;) {
+              console.log("clear "+i);
+              const element = document.getElementsByName("showImgs")[i];
+              element.remove();
+            }
+            break;
+          case "img_2":
+            document.getElementsByName("showImgs")[0] = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + fileList[0].Name;
+            for (let i = 1; i < document.getElementsByName("showImgs").length; i++) {
+              document.getElementsByName("showImgs")[i].remove();
+            }
+            for (let i = 1; i < fileList.length; i++) {
+              var n = document.createElement("img");
+              n.name="showImgs";
+              const element = fileList[i];
+              n.src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + element.Name;
+              document.getElementById("right").appendChild(n);
+            }
+          default:
+            break;
+        }
+      }
     }
 
     function httpGet(theUrl) {
