@@ -136,7 +136,7 @@
 
     function updateImg(i) {
         showIndex = i;
-        document.getElementById("show").src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + fileList[i].Name;
+        document.getElementById("show").src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + fileList[i].Name;
         document.getElementById("show").style.height = window.innerHeight;
         var lis = document.getElementById("left").getElementsByTagName("li");
         for (let i = 0; i < lis.length; i++) {
