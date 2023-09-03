@@ -3,7 +3,6 @@ package downloadGroup
 import (
 	"Simserver/Libs"
 	"archive/zip"
-	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,7 +33,7 @@ type DownloadCodeItem struct {
 	Files []string `json:"Files"`
 }
 
-func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine, staticFiles embed.FS) {
+func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine) {
 	routerPage, routerApi := Downloader_routerGroup.Group("/dl"), Downloader_routerGroup.Group("/api/dl")
 	if DownloadCode_open {
 		LoadDownloadCodeJson()

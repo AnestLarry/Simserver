@@ -29,8 +29,6 @@ var (
 )
 
 var (
-	//go:embed static
-	staticFiles embed.FS
 	//go:embed view
 	viewFiles                    embed.FS
 	ip, port, pem_file, key_file = "0.0.0.0", "5000", "", ""
@@ -38,7 +36,7 @@ var (
 
 func main() {
 	parseArgs()
-	if uploadGroup.Upload_open || uploadGroup.Upload_text_open {
+	if uploadGroup.Upload_open {
 		if Libs.LibsXExists("./upload") {
 			if !Libs.LibsXIsDir("./upload") {
 				fmt.Println("upload is not a folder!")
@@ -83,7 +81,6 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	downloadGroup.Ls_open = acs.Ls
 	downloadGroup.Zip_open = acs.Zip
 	downloadGroup.DownloadCode_open = acs.DownloadCode
-	uploadGroup.Upload_text_open = acs.UploadText
 	uploadGroup.Upload_open = acs.Upload
 	viewGroup.View_open = acs.View
 	log_file_open = acs.Log
@@ -113,9 +110,9 @@ func routerGroup_init(r *gin.Engine) {
 	// global init
 	router_init(r)
 	// Uploader routerGroup
-	uploadGroup.Upload_routerGroup_init(r, staticFiles)
+	uploadGroup.Upload_routerGroup_init(r)
 	// Downloader routerGroup
-	downloadGroup.Downloader_routerGroup_init(r, staticFiles)
+	downloadGroup.Downloader_routerGroup_init(r)
 	// View routerGroup
 	viewGroup.View_routerGroup_init(r, viewFiles)
 }
@@ -161,7 +158,6 @@ func parseArgs() {
 	flag.StringVar(&ip, "ip", "0.0.0.0", "set the ip listen")
 	flag.StringVar(&port, "port", "5000", "set the port listen")
 	flag.BoolVar(&uploadGroup.Upload_open, "upload", false, "open upload mode")
-	flag.BoolVar(&uploadGroup.Upload_text_open, "uT", false, "open upload_text mode")
 	flag.BoolVar(&downloadGroup.Zip_open, "zip", false, "open zip mode")
 	flag.BoolVar(&downloadGroup.DownloadCode_open, "dC", false, "open download_code mode")
 	flag.BoolVar(&viewGroup.View_open, "view", false, "open view mode")
