@@ -106,6 +106,13 @@
         <li>
             <a onclick="packFolder();">pack this folder</a>
         </li>
+        <li>sortBy <select onblur="sortedBy=this.value;localStorage.setItem('sortedBy',this.value);updateData(false)">
+            <option value="NameOrder">NameOrder</option>
+            <option value="NameReverse">NameReverse</option>
+            <option value="TimeOrder">TimeOrder</option>
+            <option value="TimeReverse">TimeReverse</option>
+            </select> 
+        </li>
     </ul>
     <div style="clear: both"></div>
     <h3>Folders:</h3>
@@ -135,6 +142,8 @@
     var folderListNode = document.getElementById("folderList");
     var tFolder = document.querySelector("#t_folder");
     var tFile = document.querySelector("#t_file");
+    var listData = "";
+    var sortedBy = "NameOrder";
 
     function init() {
         var urlStack = JSON.parse(localStorage.getItem("urlStack"));
@@ -144,20 +153,35 @@
             document.getElementById("url").value = "/";
             localStorage.setItem("urlStack", JSON.stringify(["/"]));
         }
-        updateData();
+        if(localStorage.getItem("sortedBy")!==null){
+            sortedBy = localStorage.getItem("sortedBy")
+        }
+        updateData(true);
     }
 
     init();
 
-    function updateData() {
-        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
-        var url = "";
-        if (urlStack.length > 1) {
-            url = baseUrl + "/api/dl/ls/" + urlStack.join("/");
-        } else {
-            url = baseUrl + "/api/dl/ls/" + urlStack[0];
+    function getSortFunction() {
+        const funcMap = {
+            "NameOrder":(a,b)=> a.Name.localeCompare(b.Name),
+            "NameReverse":(a,b)=> -a.Name.localeCompare(b.Name),
+            "TimeOrder":(a,b)=> (new Date(a.ModTime)) - (new Date(b.ModTime)),
+            "TimeReverse":(a,b)=> (new Date(b.ModTime)) - (new Date(a.ModTime)),
         }
-        var data = JSON.parse(httpGet(url));
+        return funcMap[sortedBy]
+    }
+
+    function updateData(requestOnce) {
+        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+        if(requestOnce){
+            var url = "";
+            if (urlStack.length > 1) {
+                url = baseUrl + "/api/dl/ls/" + urlStack.join("/");
+            } else {
+                url = baseUrl + "/api/dl/ls/" + urlStack[0];
+            }
+            listData = JSON.parse(httpGet(url));
+        }
         fileListNode.innerHTML = "";
         folderListNode.innerHTML = "";
         if (urlStack.length > 1) {
@@ -165,9 +189,9 @@
         } else {
             document.getElementById("pwd").innerText = urlStack[0];
         }
-        if (data["folderList"] !== null) {
-            data["folderList"].sort((a, b) => a.Name < b.Name ? a : b);
-            data["folderList"].forEach((v, i) => {
+        if (listData["folderList"] !== null) {
+            listData["folderList"].sort(getSortFunction());
+            listData["folderList"].forEach((v, i) => {
                 const modtime = new Date(v["ModTime"]);
                 var tds = tFolder.content.querySelectorAll("td");
                 var a = tFolder.content.querySelector("a");
@@ -178,9 +202,9 @@
                 folderListNode.appendChild(document.importNode(tFolder.content, true));
             });
         }
-        if (data["fileList"] !== null) {
-            data["fileList"].sort((a, b) => a.Name < b.Name ? a : b);
-            data["fileList"].forEach((v, i) => {
+        if (listData["fileList"] !== null) {
+            listData["fileList"].sort(getSortFunction());
+            listData["fileList"].forEach((v, i) => {
                 const modtime = new Date(v["ModTime"]);
                 var tds = tFile.content.querySelectorAll("td");
                 tds[0].innerHTML = v["Name"];
@@ -209,7 +233,7 @@
         }
         localStorage.setItem("urlStack", JSON.stringify(urlStack));
         localStorage.setItem("prevFolder", folderName);
-        updateData();
+        updateData(true);
     }
 
     function changeUrl(n) {
@@ -221,7 +245,7 @@
         localStorage.setItem("urlStack", JSON.stringify(urlStack));
         console.log(url);
         console.log(urlStack);
-        updateData();
+        updateData(true);
     }
 
     function back() {
@@ -232,7 +256,7 @@
             urlStack[0] = "/";
         }
         localStorage.setItem("urlStack", JSON.stringify(urlStack));
-        updateData();
+        updateData(true);
         let prevFolder = document.getElementById(localStorage.getItem("prevFolder"));
         if (prevFolder !== null) {
             window.scrollTo(0, prevFolder.getBoundingClientRect().top + window.scrollY - 60);
