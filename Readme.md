@@ -13,8 +13,7 @@ Tips:
  v  - get version
 Mode:
  ls  - open ls function
- upload  - allow user upload files to host
- uploadText  - allow user fill textarea to save text in txt
+ upload  - allow user upload data to host
  zip  - allow zip dir for downloadGroup (DANGER!)
  https  - use https with crt and key 
  log  - put log in file
@@ -47,8 +46,6 @@ explain for commands.
 * `-upload` Open upload mode.
   - `ip:port/upload/` Open this URL to get the upload page. It can upload lots of files once.
     * It will change upload file's extension name.
-* `-uploadText` Open upload text mode.
-  - `ip:port/upload/text` Open this URL to get the upload text page. It can upload text without a txt file.
 * `-zip` Open zip mode.
   - `ip:port/dl/zip/folderPath` Open this URL to download folder with zip format package.
 * `-https` use https.
@@ -105,7 +102,6 @@ explain for commands.
           "zip": false,
           "log": true,
           "upload": true,
-          "uploadText": true,
           "downloadCode": true,
           "https": ["Simserver.cer", "Simserver.pk"],
           "ip": "0.0.0.0",
