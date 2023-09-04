@@ -25,7 +25,7 @@ steps:
   - task: Go@0
     inputs:
       command: 'build'
-      arguments: 'ftpserve.go'
+      arguments: '-ldflags "-s -w" ftpserve.go'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
   - task: CopyFiles@2
     inputs:
