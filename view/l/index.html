@@ -115,13 +115,15 @@
         </li>
     </ul>
     <div style="clear: both"></div>
-    <h3>Folders:</h3>
-    <ul class="fls" id="folderList">
-    </ul>
+    <details>
+        <summary><h3>Folders:</h3></summary>
+        <ul class="fls" id="folderList"></ul>
+    </details>
     <div style="clear: both"></div>
-    <h3>Files:</h3>
-    <ul class="fls" id="fileList">
-    </ul>
+    <details>
+        <summary><h3>Files:</h3></summary>
+        <ul class="fls" id="fileList"></ul>
+    </details>
 </div>
 <template id="t_folder">
     <li><a onclick="changePath(this)"><table>
