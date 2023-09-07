@@ -189,36 +189,29 @@
         } else {
             document.getElementById("pwd").innerText = urlStack[0];
         }
-        if (listData["folderList"] !== null) {
-            listData["folderList"].sort(getSortFunction());
-            listData["folderList"].forEach((v, i) => {
+        const flush = (list,isFile)=>{
+            if(!list) return;
+            const itemType = isFile?tFile:tFolder;
+            list.sort(getSortFunction());
+            list.forEach((v, i) => {
                 const modtime = new Date(v["ModTime"]);
-                var tds = tFolder.content.querySelectorAll("td");
-                var a = tFolder.content.querySelector("a");
-                a.setAttribute("target", v["Path"]);
-                a.id = v["Name"];
+                var tds = itemType.content.querySelectorAll("td");
+                var a = itemType.content.querySelector("a");
                 tds[0].innerHTML = v["Name"];
                 tds[1].innerHTML = `${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}`;
-                folderListNode.appendChild(document.importNode(tFolder.content, true));
-            });
-        }
-        if (listData["fileList"] !== null) {
-            listData["fileList"].sort(getSortFunction());
-            listData["fileList"].forEach((v, i) => {
-                const modtime = new Date(v["ModTime"]);
-                var tds = tFile.content.querySelectorAll("td");
-                tds[0].innerHTML = v["Name"];
-                tds[1].innerHTML = `${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}`;
-                tds[2].innerHTML = v["Size"] + " MB";
-                var a = tFile.content.querySelector("a");
-                if (urlStack.length === 1 && urlStack[0] === "/") {
-                    a.href = baseUrl + "/api/dl/n//" + v["Name"];
-                } else {
-                    a.href = baseUrl + "/api/dl/n/" + urlStack.join("/") + "/" + v["Name"];
+                if(isFile){
+                    tds[2].innerHTML = v["Size"] + " MB";
+                    a.href = baseUrl + "/api/dl/n/" +
+                        ((urlStack.length == 1 && urlStack[0] === "/")?"/"+v["Name"]:urlStack.join("/") + "/" + v["Name"]);
+                }else{
+                    a.setAttribute("target", v["Path"]);
+                    a.id = v["Name"];
                 }
-                fileListNode.appendChild(document.importNode(tFile.content, true));
+                (isFile?fileListNode:folderListNode).appendChild(document.importNode(itemType.content, true))
             });
-        }
+        };
+        flush(listData["folderList"],false);
+        flush(listData["fileList"],true);
     }
 
     function changePath(n) {
@@ -243,8 +236,6 @@
             urlStack[0] = "/" + urlStack[0];
         }
         localStorage.setItem("urlStack", JSON.stringify(urlStack));
-        console.log(url);
-        console.log(urlStack);
         updateData(true);
     }
 
