@@ -86,29 +86,49 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine) {
 		dCodeItem, ok := DownloadCodeMap[dCode]
 		if !ok {
 			c.JSON(403, gin.H{"message": "this Code is not support!"})
-		} else {
-			c.Writer.Header().Set("Content-type", "application/octet-stream")
-			downloadCodeFiles := dCodeItem.Files
-			c.Stream(func(w io.Writer) bool {
-				ar := zip.NewWriter(w)
-				if dCodeItem.Name != "" {
-					c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-						dCodeItem.Name))
+		}
+		c.Writer.Header().Set("Content-type", "application/octet-stream")
+		downloadCodeFiles := dCodeItem.Files
+		c.Stream(func(w io.Writer) bool {
+			ar := zip.NewWriter(w)
+			c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
+				Libs.LibsXTp(dCodeItem.Name != "", dCodeItem.Name, time.Now().Format("2006-01-02--15-04-05"))))
+			for i := 0; i < len(downloadCodeFiles); i++ {
+				v := downloadCodeFiles[i]
+				if Libs.LibsXIsDir(v) {
+					baseFolder := v[strings.LastIndex(strings.ReplaceAll(v, "\\", "/"), "/")+1:]
+					filepath.Walk(v, func(path string, info os.FileInfo, err error) error {
+						if err != nil {
+							return err
+						}
+						if !info.IsDir() {
+							file, err := os.Open(path)
+							if err != nil {
+								return err
+							}
+							defer file.Close()
+							zipEntry, err := ar.Create(filepath.Join(baseFolder, path[len(v):]))
+							if err != nil {
+								return err
+							}
+							// Write into zip
+							_, err = io.Copy(zipEntry, file)
+							if err != nil {
+								return err
+							}
+						}
+						return nil
+					})
 				} else {
-					c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip",
-						time.Now().Format("2006-01-02--15-04-05")))
-				}
-				for i := 0; i < len(downloadCodeFiles); i++ {
-					v := downloadCodeFiles[i]
 					file, _ := os.Open(v)
 					newPath := strings.ReplaceAll(v, "\\", "/")
 					f, _ := ar.Create(newPath[strings.LastIndex(newPath, "/")+1:])
 					io.Copy(f, file)
 				}
-				ar.Close()
-				return false
-			})
-		}
+			}
+			ar.Close()
+			return false
+		})
 	})
 }
 
