@@ -46,11 +46,31 @@
 </head>
 <body>
 <h1 style="text-align: center;">Simserver View Panel</h1>
-<div class="container">
-  <div class="square"><a href="./h5player"><div class="text">h5player</div></a></div>
-  <div class="square"><a href="./l"><div class="text">list</div></a></div>
-  <div class="square"><a href="./photoViewer" ><div class="text">photoViewer</div></a></div>
-  <div class="square"><a href="./upload" ><div class="text">upload</div></a></div>
+<div class="container"></div>
+<template id="t_square">
+<div class="square">
+  <a><div class="text"></div></a>
 </div>
+</template>
+<script>
+  const baseUrl = window.location.protocol + "//" + window.location.host;
+  (()=>{
+    var square = document.querySelector("#t_square");
+    var container = document.querySelector(".container");
+    const data = JSON.parse(httpGet(baseUrl+"/api/view/"));
+    for (let i = 0; i < data.views.length; i++) {
+      const element = data.views[i];
+      square.content.querySelector("a").href = "./"+element;
+      square.content.querySelector(".text").textContent = element;
+      container.appendChild(document.importNode(square.content,true));
+    }
+  })();
+  function httpGet(theUrl) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", theUrl, false); // false for synchronous request
+    xmlHttp.send(null);
+    return xmlHttp.responseText;
+  }
+</script>
 </body>
 </html>
