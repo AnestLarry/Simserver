@@ -96,7 +96,7 @@
 
 <body>
 <input id="url" value="/" onblur="changeUrl(this)"/>
-<div id="pwd"></div>
+<div id="pwd" onclick="navigator.clipboard.writeText(this.textContent)"></div>
 <div id="list">
     <h1>Items:</h1>
     <ul>
