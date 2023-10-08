@@ -72,11 +72,11 @@
     }
 
     .imgWidth1st{
-      width: 100vh;
+      width: 98vw;
     }
 
     .imgHeight1st{
-      height: 100vh;
+      height: 98vh;
     }
 
     .leftS {
@@ -102,6 +102,10 @@
     <option value="img_1">1</option>
     <option value="img_2">multiple</option>
   </optgroup>
+  <optgroup label="folder mode">
+    <option value="singleFolder" selected>single folder</option>
+    <option value="doubleFolder">double folder</option>
+  </optgroup>
 </select>
 </div>
 
@@ -116,7 +120,10 @@
 <script>
     var baseUrl = window.location.protocol + "//" + window.location.host;
     var fileList = [];
-    var showIndex = 0;
+    var configStack = {
+      "folderMode": "1",
+      "showIndex": 0
+    };
     if (window.location.search.length !== 0) {
         var path = window.location.search.indexOf("path")+5;
         if (window.location.search.indexOf("&", path) === -1) {
@@ -127,57 +134,55 @@
     }
 
     function updateData(u) {
-        var imgExt = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "avif", "heif", "svg"];
-        var url = baseUrl + "/api/dl/ls/" + u.value;
-        var data = JSON.parse(httpGet(url));
-        fileList = [];
-        showIndex = 0
-        var lU = document.getElementById("leftUl");
-        lU.innerHTML = "";
-        data["fileList"].sort(function (a, b) {
-            if (a.Name.length !== b.Name.length) {
-                return a.Name.length < b.Name.length ? -1 : 1;
-            } else {
-                return a.Name.substring(0, a.Name.lastIndexOf(".")) < b.Name.substring(0, b.Name.lastIndexOf(".")) ? a : b;
-            }
-        });
-        for (let file_i = 0; file_i < data["fileList"].length; file_i++) {
-            let file = data["fileList"][file_i];
-            for (let ei = 0; ei < imgExt.length; ei++) {
-                if (file.Name.toLowerCase().endsWith(imgExt[ei])) {
-                    var n = document.createElement("li");
-                    n.setAttribute("i", file_i.toString());
-                    n.innerText = file["Name"];
-                    n.setAttribute("onclick", "updateImg(" + fileList.length + ")");
-                    lU.appendChild(n);
-                    fileList.push(file);
-                    break;
-                }
+      var lU = document.getElementById("leftUl");
+      lU.innerHTML = "";
+      configStack.showIndex = 0;
+      fileList = [];
+      if(configStack.folderMode === "1"){
+        client.ImgList(baseUrl + "/api/dl/ls/" + u.value, "");
+      }else{
+        const fs = client.FolderList(baseUrl + "/api/dl/ls/" + u.value);
+        for (let i = 0; i < fs.length; i++) {
+          const element = fs[i];
+            var curFileListLen = fileList.length;
+            client.ImgList(
+              baseUrl + "/api/dl/ls/" + u.value + (u.value.endsWith("/") ? "" : "/") + element.Name,
+              element.Name + (element.Name.endsWith("/")?"":"/")
+            );
+            while(curFileListLen<fileList.length){
+              fileList[curFileListLen].Name = element.Name + (element.Name.endsWith("/") ? "":"/") + fileList[curFileListLen].Name;
+              curFileListLen++;
             }
         }
-        {
-          // update chain
-          updateImg(0);
-          viewModeChange(document.getElementById("viewMode"))
-        }
+      }
+      
+      {
+        // update chain
+        updateImg(0);
+        viewModeChange(document.getElementById("viewMode"))
+      }
     }
 
     function updateImg(i) {
-        showIndex = i;
-        document.getElementById("show").src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + fileList[i].Name;
+        configStack.showIndex = i;
+        const urlValue = document.getElementById("url").value;
+        if(fileList[i]===undefined || fileList[i]===null){
+          return;
+        }
+        document.getElementById("show").src = baseUrl + "/api/dl/n/" + urlValue + (urlValue.endsWith("/")? "" : "/") + fileList[i].Name;
         document.getElementById("show").style.height = window.innerHeight;
         var lis = document.getElementById("left").getElementsByTagName("li");
         for (let i = 0; i < lis.length; i++) {
-            lis[i].setAttribute("class", i === showIndex ? "curli" : "");
+            lis[i].setAttribute("class", i === configStack.showIndex ? "curli" : "");
         }
     }
 
     function nextImg() {
-        if (showIndex < fileList.length) {
-            updateImg(++showIndex);
+        if (configStack.showIndex < fileList.length) {
+            updateImg(++configStack.showIndex);
         } else {
-            showIndex = 0;
-            updateImg(showIndex);
+            configStack.showIndex = 0;
+            updateImg(configStack.showIndex);
         }
     }
 
@@ -193,54 +198,133 @@
         }
     }
 
-    function viewModeChange(a) {
-      for(let i = 0; i < a.selectedOptions.length; i++){
-        const e = a.selectedOptions[i];
-        switch(e.value){
-          case "Width":
-            for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
-              const element = document.getElementsByName("showImgs")[i];
-              element.setAttribute("class", "imgWidth1st");
-            }
-            break;
-          case "Height":
+  function viewModeChange(a) {
+    let sOps = [...a.options];
+    let sSelectedOps = [...a.selectedOptions];
+    sOps.filter(x=>sSelectedOps.indexOf(x)===-1).forEach((e)=>{
+      switch(e.value) {
+        case "Width":
           for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
-              const element = document.getElementsByName("showImgs")[i];
-              element.setAttribute("class", "imgHeight1st");
-            }
-            break;
-          case "img_1":
-            console.log("clear img")
-            for (let i = 1; i < document.getElementsByName("showImgs").length;) {
-              console.log("clear "+i);
-              const element = document.getElementsByName("showImgs")[i];
-              element.remove();
-            }
-            break;
-          case "img_2":
-            document.getElementsByName("showImgs")[0] = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + fileList[0].Name;
-            for (let i = 1; i < document.getElementsByName("showImgs").length; i++) {
-              document.getElementsByName("showImgs")[i].remove();
-            }
-            for (let i = 1; i < fileList.length; i++) {
-              var n = document.createElement("img");
-              n.name="showImgs";
-              const element = fileList[i];
-              n.src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + element.Name;
-              document.getElementById("right").appendChild(n);
-            }
-          default:
-            break;
-        }
+            const element = document.getElementsByName("showImgs")[i];
+            utils.removeClass(element,"imgWidth1st")
+            utils.removeClass(document.getElementById("right"), "imgWidth1st");
+          }
+          break;
+        case "Height":
+        for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
+            const element = document.getElementsByName("showImgs")[i];
+            utils.removeClass(element, "imgHeight1st");
+            utils.removeClass(document.getElementById("right"), "imgHeight1st");
+          }
+          break;
+        default:
+          break;
       }
-    }
+    });
+    sOps.filter(x=>sSelectedOps.indexOf(x)>-1).forEach(e=>{
+      switch(e.value){
+        case "Width":
+          for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
+            const element = document.getElementsByName("showImgs")[i];
+            utils.addClass(element,"imgWidth1st")
+            utils.addClass(document.getElementById("right"), "imgWidth1st");
+          }
+          break;
+        case "Height":
+        for (let i = 0; i < document.getElementsByName("showImgs").length; i++) {
+            const element = document.getElementsByName("showImgs")[i];
+            utils.addClass(element, "imgHeight1st");
+            utils.addClass(document.getElementById("right"), "imgHeight1st");
+          }
+          break;
+        case "img_1":
+          for (let i = 1; i < document.getElementsByName("showImgs").length;) {
+            const element = document.getElementsByName("showImgs")[i];
+            element.remove();
+          }
+          break;
+        case "img_2":
+          document.getElementsByName("showImgs")[0] = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + fileList[0].Name;
+          for (let i = 1; i < document.getElementsByName("showImgs").length; i++) {
+            document.getElementsByName("showImgs")[i].remove();
+          }
+          for (let i = 1; i < fileList.length; i++) {
+            var n = document.createElement("img");
+            n.name="showImgs";
+            const element = fileList[i];
+            n.src = baseUrl + "/api/dl/n/" + document.getElementById("url").value + (document.getElementById("url").value.endsWith("/")?"":"/") + element.Name;
+            document.getElementById("right").appendChild(n);
+          }
+          break;
+        case "singleFolder":
+          configStack.folderMode="1";
+          break;
+        case "doubleFolder":
+          configStack.folderMode="2";
+          break;
+        default:
+          break;
+      }
+    })
+  }
 
-    function httpGet(theUrl) {
+    const http = { 
+      Get: (theUrl) => {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.open("GET", theUrl, false); // false for synchronous request
         xmlHttp.send(null);
         return xmlHttp.responseText;
     }
+    }
+
+    const client = {
+      ImgList:(url, prefix) => {
+        const imgExts = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "avif", "heif", "svg"];
+        var data = JSON.parse(http.Get(url));
+        if(data["fileList"] === null) {
+          return;
+        }
+        var lU = document.getElementById("leftUl");
+        data["fileList"].sort(client.sortFunction);
+        for (let file_i = 0; file_i < data["fileList"].length; file_i++) {
+          let file = data["fileList"][file_i];
+          for (let ei = 0; ei < imgExts.length; ei++) {
+            if (file.Name.toLowerCase().endsWith(imgExts[ei])) {
+              var n = document.createElement("li");
+              n.setAttribute("i", file_i.toString());
+              n.innerText = prefix + file.Name;
+              n.setAttribute("onclick", "updateImg(" + fileList.length + ")");
+              lU.appendChild(n);
+              fileList.push(file);
+              break;
+            }
+          }
+        }
+      },
+      FolderList:(url)=>{
+        var data = JSON.parse(http.Get(url));
+        if(data["folderList"] === null){
+          return [];
+        }
+        data["folderList"].sort(client.sortFunction);
+        return data["folderList"];
+      },
+      sortFunction:(a,b) => a.Name.length !== b.Name.length?(a.Name.length < b.Name.length ? -1 : 1):(a.Name.localeCompare(b.Name) ? a : b),
+    };
+    const utils = {
+      hasClass:(ele, cls) =>{
+        return ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
+      },
+      addClass:(ele, cls)=> {
+        if (!utils.hasClass(ele, cls)) ele.className += " " + cls;
+      },
+      removeClass:(ele, cls)=> {
+        if (utils.hasClass(ele, cls)) {
+          var reg = new RegExp("(\\s|^)" + cls + "(\\s|$)");
+          ele.className = ele.className.replace(reg, " ");
+        }
+      }
+    };
 </script>
 </body>
 </html>
