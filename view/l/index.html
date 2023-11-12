@@ -2,272 +2,542 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simserver</title>
-    <style>
-        #list {
-            width: 62%;
-            margin: 0 auto;
-        }
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simserver</title>
+  <style>
+    #list {
+      width: 62%;
+      margin: 0 auto;
+    }
 
-        ul li {
-            margin: 3px 5px 0 0;
-            width: 30%;
-            float: left;
-            display: block;
-            text-align: center;
-            list-style: none;
-        }
+    #list ul li {
+      margin: 3px 5px 0 0;
+      width: 30%;
+      float: left;
+      display: block;
+      text-align: center;
+      list-style: none;
+    }
 
-        @media screen and (max-width: 600px) {
-            #list {
-                width: 93%;
-                margin: 0 auto;
-            }
+    @media screen and (max-width: 600px) {
+      #list {
+        width: 93%;
+        margin: 0 auto;
+      }
 
-            .fls li {
-                width: 95%;
-                float: none;
-                display: inline-block;
-            }
-        }
+      .fls li {
+        width: 95%;
+        float: none;
+        display: inline-block;
+      }
+    }
 
-        @media screen and (max-width: 800px) {
-            #list {
-                width: 80%;
-            }
+    @media screen and (max-width: 800px) {
+      #list {
+        width: 80%;
+      }
 
-            ul li {
-                width: 40%;
-            }
-        }
+      ul li {
+        width: 40%;
+      }
+    }
 
-        ul {
-            clear: both;
-        }
+    #list ul {
+      clear: both;
+    }
 
-        .fls li:nth-child(3n-2) {
-            border: green solid 3px;
-        }
+    .fls li:nth-child(3n-2) {
+      border: green solid 3px;
+    }
 
-        .fls li:nth-child(3n-1) {
-            border: blue solid 3px;
-        }
+    .fls li:nth-child(3n-1) {
+      border: blue solid 3px;
+    }
 
-        .fls li:nth-child(3n) {
-            border: red solid 3px;
-        }
+    .fls li:nth-child(3n) {
+      border: red solid 3px;
+    }
 
-        ul li a {
-            height: 100%;
-            text-decoration: none;
-            word-wrap: break-word;
-            outline: none;
-            color: black;
-            display: block;
-            padding: 3px;
-            font-size: large;
-        }
+    #list ul li a {
+      height: 100%;
+      text-decoration: none;
+      word-wrap: break-word;
+      outline: none;
+      color: black;
+      display: block;
+      padding: 3px;
+      font-size: large;
+    }
 
-        ul li:hover {
-            background-color: #808080;
-        }
+    #list ul li:hover {
+      background-color: #808080;
+    }
 
-        ul li:checked {
-            background-color: #808080;
-        }
+    #list ul li:checked {
+      background-color: #808080;
+    }
 
-        .fls table{
-            border-collapse: collapse;
-        }
+    .fls table {
+      border-collapse: collapse;
+    }
 
-        .fls table tr:nth-child(2) {
-            border-top: 1px solid red;
-            border-bottom: 1px solid red;
-        }
+    .fls table tr:nth-child(2) {
+      border-top: 1px solid red;
+      border-bottom: 1px solid red;
+    }
 
-        #pwd {
-            border: solid red;
-        }
-    </style>
+    #url {
+      width: 100%;
+    }
+
+    .divHidden {
+      display: none !important;
+    }
+  </style>
+  <style name="photo">
+    #photoMode {
+      width: 17%;
+      font-size: larger;
+    }
+
+    #left {
+      float: left;
+      background-color: #fff;
+      width: 20%;
+      display: inline-block;
+      overflow: hidden;
+    }
+
+    #left ul {
+      margin: 0;
+      padding: 0;
+    }
+
+    #left li {
+      margin: 5 0;
+      list-style: none;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .curli {
+      background-color: #aaa;
+    }
+
+    #left li:hover {
+      background-color: #f2f2f2;
+    }
+
+    #right {
+      min-height: 100px;
+      float: right;
+      background-color: #fff;
+      width: 78%;
+      display: inline-block;
+      padding: 2px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    #right img {
+      margin: 0 auto;
+    }
+
+    .leftS {
+      height: 0 !important;
+      width: 0 !important;
+    }
+
+    .rightL {
+      height: 100% !important;
+      width: 100% !important;
+    }
+  </style>
 </head>
 
 <body>
-<input id="url" value="/" onblur="changeUrl(this)"/>
-<div id="pwd" onclick="navigator.clipboard.writeText(this.textContent)"></div>
-<div id="list">
+  <div id="list">
     <h1>Items:</h1>
+    <div id="panel">
+      <input id="url" value="/" onmouseleave="onmouseleave_url(false)" onblur="onmouseleave_url(true)" />
+    </div>
     <ul>
-        <li>
-            <a onclick="back();">..</a>
+      <li><a onclick="back();">..</a></li>
+      <li><a onclick="packFolder();">pack this folder</a></li>
+      <li>Mode
+        <input type="radio" name="pageMode" onclick="pageModeToggle()" value="List" checked="checked" id="pageModeList"> <label for="pageModeList">List</label>
+        <input type="radio" name="pageMode" onclick="pageModeToggle()" value="Photo" id="pageModePhoto"> <label for="pageModePhoto">Photo</label>
+      </li>
+      <li>sortBy <select onblur="sortedBy=this.value;localStorage.setItem('sortedBy',this.value);updateData(false)">
+          <option value="NameOrder">NameOrder</option>
+          <option value="NameReverse">NameReverse</option>
+          <option value="TimeOrder">TimeOrder</option>
+          <option value="TimeReverse">TimeReverse</option>
+        </select>
+      </li>
+      <li class="divHidden photoElement">
+        Photo Mode<br><select id="photoMode" style="width: 100%;" multiple onchange="viewModeChange(this)">
+          <option value="img_2">multiple</option>
+          <option value="doubleFolder">double folder</option>
+        </select>
+      </li>
+      <form>
+        <li class="divHidden photoElement">
+          Photo Width <br><input type="range" min="50" max="150" value="100"
+            onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=this.value+"vw");document.querySelector("#photoWidth").textContent=this.value'><label
+            id="photoWidth">100</label></li>
+        <li class="divHidden photoElement">Photo Height <br><input type="range" min="50" max="150" value="100"
+            onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=this.value+"vh");document.querySelector("#photoHeight").textContent=this.value'>
+          <label id="photoHeight">100</label><br>
         </li>
-        <li>
-            <a onclick="packFolder();">pack this folder</a>
+        <li class="divHidden photoElement"><input type="reset" value="Reset" />&emsp;<input type="button"
+            onclick='[...document.querySelectorAll("#right img")].map(x=>{x.style.height="auto";x.style.width="auto";})'
+            value="Remove Effective">
         </li>
-        <li>sortBy <select onblur="sortedBy=this.value;localStorage.setItem('sortedBy',this.value);updateData(false)">
-            <option value="NameOrder">NameOrder</option>
-            <option value="NameReverse">NameReverse</option>
-            <option value="TimeOrder">TimeOrder</option>
-            <option value="TimeReverse">TimeReverse</option>
-            </select> 
-        </li>
+      </form>
     </ul>
     <div style="clear: both"></div>
-    <details>
-        <summary><h3>Folders:</h3></summary>
+    <div id="itemlist">
+      <details>
+        <summary>
+          <h3>Folders:</h3>
+        </summary>
         <ul class="fls" id="folderList"></ul>
-    </details>
-    <div style="clear: both"></div>
-    <details>
-        <summary><h3>Files:</h3></summary>
+      </details>
+      <div style="clear: both"></div>
+      <details>
+        <summary>
+          <h3>Files:</h3>
+        </summary>
         <ul class="fls" id="fileList"></ul>
-    </details>
-</div>
-<template id="t_folder">
-    <li><a onclick="changePath(this)"><table>
-        <tr><td class="name"></td></tr>
-        <tr><td></td></tr>
-    </table></a></li>
-</template>
-<template id="t_file">
-    <li><a><table>
-        <tr><td></td></tr>
-        <tr><td></td></tr>
-        <tr><td></td></tr>
-    </table></a></li>
-</template>
-<script>
-    const baseUrl = window.location.protocol + "//" + window.location.host;
-    var fileListNode = document.getElementById("fileList");
-    var folderListNode = document.getElementById("folderList");
-    var tFolder = document.querySelector("#t_folder");
-    var tFile = document.querySelector("#t_file");
-    var listData = "";
-    var sortedBy = "NameOrder";
-
-    function init() {
-        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
-        if (urlStack !== null && Object.keys(urlStack).length > 0) {
-            document.getElementById("url").value = urlStack.join("/");
-        } else {
-            document.getElementById("url").value = "/";
-            localStorage.setItem("urlStack", JSON.stringify(["/"]));
-        }
-        if(localStorage.getItem("sortedBy")!==null){
-            sortedBy = localStorage.getItem("sortedBy")
-        }
-        updateData(true);
+      </details>
+    </div>
+  </div>
+  <div id="photoPanel" class="divHidden photoElement">
+    <div class="all">
+      <div id="left">
+        <ul id="leftUl">
+        </ul>
+      </div>
+      <div id="right" onmouseleave="LargePhotoMode(false)" onmouseenter="LargePhotoMode(true)">
+        <img id="show" name="showImgs" onClick=nextImg()>
+      </div>
+    </div>
+  </div>
+  <script name="renders">
+    function itemListRender() {
+      document.querySelector("#folderList").innerHTML = "";
+      document.querySelector("#fileList").innerHTML = "";
+      folderRender();
+      fileRender();
     }
-
-    init();
-
-    function getSortFunction() {
-        const funcMap = {
-            "NameOrder":(a,b)=> a.Name.localeCompare(b.Name),
-            "NameReverse":(a,b)=> -a.Name.localeCompare(b.Name),
-            "TimeOrder":(a,b)=> (new Date(a.ModTime)) - (new Date(b.ModTime)),
-            "TimeReverse":(a,b)=> (new Date(b.ModTime)) - (new Date(a.ModTime)),
-        }
-        return funcMap[sortedBy]
+    function folderRender() {
+      var res = "";
+      var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+      if (listData["folderList"] === null) {
+        return;
+      }
+      listData["folderList"].forEach(item => {
+        const modtime = new Date(item["ModTime"]);
+        res += `<li><a onclick="changePath(this)" id="${item[" Name"]}">
+  <table>
+    <tr><td class="folderName">${item["Name"]}</td></tr>
+    <tr><td>${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}</td></tr>
+  </table>
+</a></li>`;
+      });
+      document.querySelector("#folderList").append(document.createRange().createContextualFragment(res));
     }
-
-    function updateData(requestOnce) {
-        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
-        if(requestOnce){
-            var url = "";
-            if (urlStack.length > 1) {
-                url = baseUrl + "/api/dl/ls/" + urlStack.join("/");
-            } else {
-                url = baseUrl + "/api/dl/ls/" + urlStack[0];
-            }
-            listData = JSON.parse(httpGet(url));
-        }
-        fileListNode.innerHTML = "";
-        folderListNode.innerHTML = "";
-        if (urlStack.length > 1) {
-            document.getElementById("pwd").innerText = urlStack.join("/");
-        } else {
-            document.getElementById("pwd").innerText = urlStack[0];
-        }
-        const flush = (list,isFile)=>{
-            if(!list) return;
-            const itemType = isFile?tFile:tFolder;
-            list.sort(getSortFunction());
-            list.forEach((v, i) => {
-                const modtime = new Date(v["ModTime"]);
-                var tds = itemType.content.querySelectorAll("td");
-                var a = itemType.content.querySelector("a");
-                tds[0].innerHTML = v["Name"];
-                tds[1].innerHTML = `${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}`;
-                if(isFile){
-                    tds[2].innerHTML = v["Size"] + " MB";
-                    a.href = baseUrl + "/api/dl/n/" +
-                        ((urlStack.length == 1 && urlStack[0] === "/")?"/"+v["Name"]:urlStack.join("/") + "/" + v["Name"]);
-                }else{
-                    a.setAttribute("target", v["Path"]);
-                    a.id = v["Name"];
-                }
-                (isFile?fileListNode:folderListNode).appendChild(document.importNode(itemType.content, true))
-            });
-        };
-        flush(listData["folderList"],false);
-        flush(listData["fileList"],true);
+    function fileRender() {
+      var res = "";
+      var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+      if (listData["fileList"] === null) {
+        return;
+      }
+      listData["fileList"].forEach(item => {
+        const modtime = new Date(item["ModTime"]);
+        res += `
+<li><a href='${baseUrl + "/api/dl/n/" + ((urlStack.length == 1 && urlStack[0] === "/") ? "/" + item["Name"] : urlStack.join("/") + "/" + item["Name"])}'>
+  <table>
+    <tr><td>${item["Name"]}</td></tr>
+    <tr><td>${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}</td></tr>
+    <tr><td>${item["Size"] + " MB"}</td></tr>
+  </table>
+</a></li>
+      `});
+      document.querySelector("#fileList").append(document.createRange().createContextualFragment(res));
     }
-
-    function changePath(n) {
-        const folderName = n.getElementsByClassName("name")[0].innerText;
-        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
-        if (urlStack.length === 1 && urlStack[0] === "/") {
-            urlStack.push(urlStack.pop() + folderName);
-        } else if (urlStack.length > 1 || urlStack[0] !== "/") {
-            urlStack.push(folderName);
-        } else {
-            urlStack = ["/"];
-        }
-        localStorage.setItem("urlStack", JSON.stringify(urlStack));
-        localStorage.setItem("prevFolder", folderName);
-        updateData(true);
-    }
-
-    function changeUrl(n) {
-        var url = n.value.substring(n.value.indexOf("/") + 1);
-        var urlStack = url.split("/");
-        if (n.value[0] === "/") {
-            urlStack[0] = "/" + urlStack[0];
-        }
-        localStorage.setItem("urlStack", JSON.stringify(urlStack));
-        updateData(true);
-    }
-
-    function back() {
-        var urlStack = JSON.parse(localStorage.getItem("urlStack"));
-        if (urlStack.length > 1) {
-            urlStack.pop();
-        } else {
-            urlStack[0] = "/";
-        }
-        localStorage.setItem("urlStack", JSON.stringify(urlStack));
-        updateData(true);
-        let prevFolder = document.getElementById(localStorage.getItem("prevFolder"));
-        if (prevFolder !== null) {
-            window.scrollTo(0, prevFolder.getBoundingClientRect().top + window.scrollY - 60);
-            localStorage.removeItem("prevFolder");
-        }
-    }
-
-    function packFolder() {
-        window.open(baseUrl + "/api/dl/zip/" + document.getElementById("url").value, "_blank");
-    }
-
-    function httpGet(theUrl) {
+  </script>
+  <script name="const">
+    const http = {
+      Get: (theUrl) => {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.open("GET", theUrl, false); // false for synchronous request
         xmlHttp.send(null);
         return xmlHttp.responseText;
+      }
     }
-</script>
+    const client = {
+      ImgList: (url, prefix) => {
+        const imgExts = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "avif", "heif", "svg"];
+        var data = JSON.parse(http.Get(url));
+        if (data["fileList"] === null) {
+          return;
+        }
+        var res = "", resList = [];
+        data["fileList"].sort(client.sortFunction);
+        data["fileList"].filter(x => {
+          return imgExts.filter(e => x.Name.endsWith(e)).length > 0 ? x : null;
+        }).forEach(x => { photoList.push(x); resList.push(x); });
+        resList.forEach((e, i) => {
+          res += `<li onclick="updateImg(${photoList.indexOf(e)})" ${i === configStack.showIndex ? 'class="curli"' : null}>${prefix + e.Name}</li>`
+        })
+        document.querySelector("#leftUl").append(document.createRange().createContextualFragment(res));
+      },
+      FolderList: (url) => {
+        var data = JSON.parse(http.Get(url));
+        if (data["folderList"] === null) {
+          return [];
+        }
+        data["folderList"].sort(client.sortFunction);
+        return data["folderList"];
+      },
+      sortFunction: (a, b) => a.Name.length !== b.Name.length ? (a.Name.length < b.Name.length ? -1 : 1) : (a.Name.localeCompare(b.Name) ? a : b),
+    };
+    const utils = {
+      hasClass: (ele, cls) => {
+        return ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
+      },
+      addClass: (ele, cls) => {
+        if (!utils.hasClass(ele, cls)) ele.className += " " + cls;
+      },
+      removeClass: (ele, cls) => {
+        if (utils.hasClass(ele, cls)) {
+          var reg = new RegExp("(\\s|^)" + cls + "(\\s|$)");
+          ele.className = ele.className.replace(reg, " ");
+        }
+      },
+      filter: (list, p) => {
+        var r = [];
+        for (let i = 0; i < list.length; i++) {
+          if (p(list[i])) {
+            r.push(list[i]);
+          }
+        }
+        return r;
+      },
+      forEach: (list, f) => {
+        for (let i = 0; i < list.length; i++) {
+          f(list[i]);
+        }
+      },
+      map: (list, f) => {
+        var r = [];
+        for (let i = 0; i < list.length; i++) {
+          r.push(f(list[i]));
+        }
+        return r;
+      }
+    };
+  </script>
+  <script name="list">
+    const baseUrl = window.location.protocol + "//" + window.location.host;
+    var listData = "";
+    var sortedBy = "NameOrder";
+
+    function onmouseleave_url(force) {
+      var value = event.target.value.replaceAll("\\", "/");
+      value = value.replace(/\/{2,}/g, "/")
+      if (!force && value === JSON.parse(localStorage.getItem("urlStack")).join("/")){
+        return;
+      }
+      var url = value.substring(value.indexOf("/") + 1);
+      var urlStack = url.split("/");
+      if (!urlStack[0].startsWith("/")) {
+        urlStack[0] = "/" + urlStack[0];
+      }
+      localStorage.setItem("urlStack", JSON.stringify(urlStack));
+      if (utils.filter(document.getElementsByName("pageMode"), x => x.checked)[0].value === "List") {
+        updateData(true);
+      } else {
+        updatePhoto(event.target.value);
+      }
+    }
+
+    function getSortFunction() {
+      return {
+        "NameOrder": (a, b) => a.Name.localeCompare(b.Name),
+        "NameReverse": (a, b) => -a.Name.localeCompare(b.Name),
+        "TimeOrder": (a, b) => (new Date(a.ModTime)) - (new Date(b.ModTime)),
+        "TimeReverse": (a, b) => (new Date(b.ModTime)) - (new Date(a.ModTime)),
+      }[sortedBy]
+    }
+
+    function updateData(requestOnce) {
+      var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+      if (requestOnce) {
+        var url = baseUrl + "/api/dl/ls/" + (urlStack.length > 1 ? urlStack.join("/") : urlStack[0]);
+        listData = JSON.parse(http.Get(url));
+      }
+      document.getElementById("url").value = urlStack.length > 1 ? urlStack.join("/") : urlStack[0];
+      if (listData["fileList"] !== null)
+        listData["fileList"].sort(getSortFunction());
+      if (listData["folderList"] !== null)
+        listData["folderList"].sort(getSortFunction());
+      itemListRender();
+    }
+
+    function changePath(n) {
+      const v = n;
+      const folderName = v.getElementsByClassName("folderName")[0].textContent;
+      var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+      if (urlStack.length === 1 && urlStack[0] === "/") {
+        urlStack.push(urlStack.pop() + folderName);
+      } else if (urlStack.length > 1 || urlStack[0] !== "/") {
+        urlStack.push(folderName);
+      } else {
+        urlStack = ["/"];
+      }
+      localStorage.setItem("urlStack", JSON.stringify(urlStack));
+      localStorage.setItem("prevFolder", folderName);
+      updateData(true);
+    }
+
+    function back() {
+      var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+      if (urlStack.length > 1) {
+        urlStack.pop();
+      } else {
+        urlStack[0] = "/";
+      }
+      localStorage.setItem("urlStack", JSON.stringify(urlStack));
+      updateData(true);
+      let prevFolder = document.getElementById(localStorage.getItem("prevFolder"));
+      if (prevFolder !== null) {
+        window.scrollTo(0, prevFolder.getBoundingClientRect().top + window.scrollY - 60);
+        localStorage.removeItem("prevFolder");
+      }
+    }
+
+    function packFolder() {
+      window.open(baseUrl + "/api/dl/zip/" + document.getElementById("url").value, "_blank");
+    }
+
+    function pageModeToggle() {
+      var node = utils.filter(document.getElementsByName("pageMode"), x => x.checked)[0];
+      if (node.value === "List") {
+        document.getElementById("itemlist").classList.remove("divHidden");
+        utils.forEach(document.querySelectorAll(".photoElement"), x => x.classList.add("divHidden"));
+        updateData(true);
+      } else {
+        document.getElementById("itemlist").classList.add("divHidden");
+        utils.forEach(document.querySelectorAll(".photoElement"), x => x.classList.remove("divHidden"))
+        updatePhoto(document.getElementById("url").value);
+      }
+    }
+  </script>
+  <script name="photo">
+    var photoList = [];
+    var configStack = {
+      "folderMode": "1",
+      "showIndex": 0
+    };
+    function updatePhoto(u) {
+      if (utils.filter(document.getElementsByName("pageMode"), x => x.checked)[0].value !== "Photo") {
+        return;
+      }
+      configStack.showIndex = 0;
+      photoList = [];
+      document.querySelector("#leftUl").innerHTML = "";
+      if (configStack.folderMode === "1") {
+        client.ImgList(baseUrl + "/api/dl/ls/" + u, "");
+      } else {
+        const fs = client.FolderList(baseUrl + "/api/dl/ls/" + u);
+        if (fs !== null) {
+          fs.forEach(element => {
+            var curFileListLen = photoList.length;
+            client.ImgList(
+              baseUrl + "/api/dl/ls/" + u + (u.endsWith("/") ? "" : "/") + element.Name,
+              element.Name + (element.Name.endsWith("/") ? "" : "/")
+            );
+            while (curFileListLen < photoList.length) {
+              photoList[curFileListLen].Name = element.Name + (element.Name.endsWith("/") ? "" : "/") + photoList[curFileListLen].Name;
+              curFileListLen++;
+            }
+          })
+        }
+      }
+      // update chain
+      updateImg(0);
+      viewModeChange(document.getElementById("photoMode"))
+    }
+
+    function updateImg(i) {
+      configStack.showIndex = i;
+      const urlValue = document.getElementById("url").value;
+      document.getElementById("show").src = baseUrl + "/api/dl/n/" + urlValue + (urlValue.endsWith("/") ? "" : "/") + photoList[i].Name;
+      document.getElementById("show").style.height = window.innerHeight;
+      var lis = utils.map(document.querySelectorAll("#left li"), x => x);
+      lis.forEach(x => {
+        x.setAttribute("class", lis.indexOf(x) === configStack.showIndex ? "curli" : "");
+      });
+    }
+
+    function nextImg() {
+      configStack.showIndex = configStack.showIndex < photoList.length ? configStack.showIndex + 1 : 0;
+      updateImg(configStack.showIndex);
+    }
+
+    function LargePhotoMode(b) {
+      const attrs = b ? ["leftS", "rightL"] : ["", ""];
+      document.getElementById("left").setAttribute("class", attrs[0]);
+      document.getElementById("right").setAttribute("class", attrs[1]);
+    }
+
+    function viewModeChange(a) {
+      let sOps = [...a.options];
+      let sSelectedOps = [...a.selectedOptions];
+      sOps.filter(x => sSelectedOps.indexOf(x) === -1).forEach((e) => {
+        switch (e.value) {
+          case "doubleFolder":
+            configStack.folderMode = "1";
+            break;
+          default:
+            break;
+        }
+      });
+      sOps.filter(x => sSelectedOps.indexOf(x) > -1).forEach(e => {
+        switch (e.value) {
+          case "doubleFolder":
+            configStack.folderMode = "2";
+            break;
+          default:
+            break;
+        }
+      })
+    }
+  </script>
+  <script name="init">
+    function init() {
+      var urlStack = JSON.parse(localStorage.getItem("urlStack"));
+      if (urlStack !== null && Object.keys(urlStack).length > 0) {
+        document.getElementById("url").value = urlStack.join("/");
+      } else {
+        localStorage.setItem("urlStack", JSON.stringify(["/"]));
+        document.getElementById("url").value = "/";
+      }
+      if (localStorage.getItem("sortedBy") !== null) {
+        sortedBy = localStorage.getItem("sortedBy")
+      }
+      updateData(true);
+    }
+    init();
+  </script>
 </body>
 
 </html>
