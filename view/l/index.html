@@ -15,32 +15,59 @@
     #list ul li {
       margin: 3px 5px 0 0;
       width: 30%;
-      float: left;
-      display: block;
+      display: inline-flex;
       text-align: center;
       list-style: none;
+      overflow: hidden;
+      word-break: break-all;
     }
 
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width: 700px) {
       #list {
         width: 93%;
         margin: 0 auto;
       }
 
-      .fls li {
+      #list ul li {
         width: 95%;
         float: none;
         display: inline-block;
       }
+      .fls li {
+        border: black solid 3px;
+      }
     }
 
-    @media screen and (max-width: 800px) {
+    @media screen and (max-width: 1100px) and (min-width:701px) {
       #list {
         width: 80%;
       }
 
-      ul li {
+      #list ul li {
         width: 40%;
+      }
+
+
+      .fls li:nth-child(2n-1) {
+        border: purple solid 3px;
+      }
+
+      .fls li:nth-child(2n) {
+        border: green solid 3px;
+      }
+    }
+
+    @media screen and (min-width:1101px) {
+      .fls li:nth-child(3n-2) {
+        border: red solid 3px;
+      }
+
+      .fls li:nth-child(3n-1) {
+        border: blue solid 3px;
+      }
+
+      .fls li:nth-child(3n) {
+        border: green solid 3px;
       }
     }
 
@@ -48,22 +75,9 @@
       clear: both;
     }
 
-    .fls li:nth-child(3n-2) {
-      border: green solid 3px;
-    }
-
-    .fls li:nth-child(3n-1) {
-      border: blue solid 3px;
-    }
-
-    .fls li:nth-child(3n) {
-      border: red solid 3px;
-    }
-
     #list ul li a {
       height: 100%;
       text-decoration: none;
-      word-wrap: break-word;
       outline: none;
       color: black;
       display: block;
@@ -169,9 +183,14 @@
     <ul>
       <li><a onclick="back();">..</a></li>
       <li><a onclick="packFolder();">pack this folder</a></li>
-      <li>Mode
-        <input type="radio" name="pageMode" onclick="pageModeToggle()" value="List" checked="checked" id="pageModeList"> <label for="pageModeList">List</label>
-        <input type="radio" name="pageMode" onclick="pageModeToggle()" value="Photo" id="pageModePhoto"> <label for="pageModePhoto">Photo</label>
+      <li>
+        <div>
+          Mode<br>
+          <input type="radio" name="pageMode" onclick="pageModeToggle()" value="List" checked="checked" id="pageModeList">
+          <label for="pageModeList">List</label><br>
+          <input type="radio" name="pageMode" onclick="pageModeToggle()" value="Photo" id="pageModePhoto"> <label
+            for="pageModePhoto">Photo</label>
+        </div>
       </li>
       <li>sortBy <select onblur="sortedBy=this.value;localStorage.setItem('sortedBy',this.value);updateData(false)">
           <option value="NameOrder">NameOrder</option>
@@ -187,13 +206,11 @@
         </select>
       </li>
       <form>
-        <li class="divHidden photoElement">
+        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=this.value+"vw");document.querySelector("#photoWidth").textContent=this.value'>
           Photo Width <br><input type="range" min="50" max="150" value="100"
-            onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=this.value+"vw");document.querySelector("#photoWidth").textContent=this.value'><label
-            id="photoWidth">100</label></li>
-        <li class="divHidden photoElement">Photo Height <br><input type="range" min="50" max="150" value="100"
-            onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=this.value+"vh");document.querySelector("#photoHeight").textContent=this.value'>
-          <label id="photoHeight">100</label><br>
+            ><label id="photoWidth">100</label></li>
+        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=this.value+"vh");document.querySelector("#photoHeight").textContent=this.value'>
+          Photo Height <br><input type="range" min="50" max="150" value="100"><label id="photoHeight">100</label><br>
         </li>
         <li class="divHidden photoElement"><input type="reset" value="Reset" />&emsp;<input type="button"
             onclick='[...document.querySelectorAll("#right img")].map(x=>{x.style.height="auto";x.style.width="auto";})'
@@ -246,8 +263,8 @@
         const modtime = new Date(item["ModTime"]);
         res += `<li><a onclick="changePath(this)" id="${item[" Name"]}">
   <table>
-    <tr><td class="folderName">${item["Name"]}</td></tr>
-    <tr><td>${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}</td></tr>
+    <tr><td class="folderName"><p>${item["Name"]}</p></td></tr>
+    <tr><td><p>${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}</p></td></tr>
   </table>
 </a></li>`;
       });
@@ -264,9 +281,9 @@
         res += `
 <li><a href='${baseUrl + "/api/dl/n/" + ((urlStack.length == 1 && urlStack[0] === "/") ? "/" + item["Name"] : urlStack.join("/") + "/" + item["Name"])}'>
   <table>
-    <tr><td>${item["Name"]}</td></tr>
-    <tr><td>${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}</td></tr>
-    <tr><td>${item["Size"] + " MB"}</td></tr>
+    <tr><td><p>${item["Name"]}</p></td></tr>
+    <tr><td><p>${modtime.getFullYear()}-${modtime.getMonth()}-${modtime.getDate()} ${modtime.getHours()}:${modtime.getMinutes()}:${modtime.getSeconds()}</p></td></tr>
+    <tr><td><p>${item["Size"] + " MB"}</p></td></tr>
   </table>
 </a></li>
       `});
@@ -353,7 +370,7 @@
     function onmouseleave_url(force) {
       var value = event.target.value.replaceAll("\\", "/");
       value = value.replace(/\/{2,}/g, "/")
-      if (!force && value === JSON.parse(localStorage.getItem("urlStack")).join("/")){
+      if (!force && value === JSON.parse(localStorage.getItem("urlStack")).join("/")) {
         return;
       }
       var url = value.substring(value.indexOf("/") + 1);
