@@ -206,11 +206,11 @@
         </select>
       </li>
       <form>
-        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=this.value+"vw");document.querySelector("#photoWidth").textContent=this.value'>
-          Photo Width <br><input type="range" min="50" max="150" value="100"
+        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=document.querySelector("#widthRange").value+"vw");document.querySelector("#photoWidth").textContent=document.querySelector("#widthRange").value'>
+          Photo Width <br><input id="widthRange" type="range" min="50" max="150" value="100"
             ><label id="photoWidth">100</label></li>
-        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=this.value+"vh");document.querySelector("#photoHeight").textContent=this.value'>
-          Photo Height <br><input type="range" min="50" max="150" value="100"><label id="photoHeight">100</label><br>
+        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=document.querySelector("#heightRange").value+"vh");document.querySelector("#photoHeight").textContent=document.querySelector("#heightRange").value'>
+          Photo Height <br><input id="heightRange" type="range" min="50" max="150" value="100"><label id="photoHeight">100</label><br>
         </li>
         <li class="divHidden photoElement"><input type="reset" value="Reset" />&emsp;<input type="button"
             onclick='[...document.querySelectorAll("#right img")].map(x=>{x.style.height="auto";x.style.width="auto";})'
