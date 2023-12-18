@@ -496,6 +496,7 @@
 
     function updateImg(i) {
       configStack.showIndex = i;
+      document.title = `${photoList[configStack.showIndex].Name}  - Simserver`;
       const urlValue = document.getElementById("url").value;
       document.getElementById("show").src = baseUrl + "/api/dl/n/" + urlValue + (urlValue.endsWith("/") ? "" : "/") + photoList[i].Name;
       document.getElementById("show").style.height = window.innerHeight;
