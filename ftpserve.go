@@ -52,7 +52,7 @@ func main() {
 		r := gin.H{"method": param.Method, "StatusCode": param.StatusCode, "ClientIP": param.ClientIP,
 			"TimeStamp": param.TimeStamp.Format(time.RFC1123), "Path": param.Path, "Request.Proto": param.Request.Proto,
 			"Latency": param.Latency, "User-Agent": param.Request.UserAgent(), "ErrorMessage": param.ErrorMessage}
-		return fmt.Sprintf("%v\n", r)
+		return fmt.Sprintf("%+v\n", r)
 	}))
 	r.Use(gin.Recovery())
 	r.GET("/version", func(c *gin.Context) {
