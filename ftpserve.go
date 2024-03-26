@@ -190,7 +190,7 @@ func parseArgs() {
 		loadConfigFromArgsConfigStruct(argsConfig.ArgConfigInit())
 		return nil
 	})
-	flag.StringVar(&loginArg, "login", "", "add account password auth for all resource.\nexample: \"admin admin\"")
+	flag.StringVar(&loginArg, "login", "", "add account password auth for all resource.\nexample: \"admin:admin\"")
 	flag.Parse()
 	if httpsArg != "" {
 		https := strings.Split(httpsArg, " ")
@@ -199,7 +199,7 @@ func parseArgs() {
 	}
 	if loginArg != "" {
 		fmt.Printf("login [%s]\n", loginArg)
-		loginArgs := strings.Split(loginArg, " ")
+		loginArgs := strings.Split(loginArg, ":")
 		login.open = true
 		login.account, login.password = loginArgs[0], loginArgs[1]
 	}
