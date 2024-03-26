@@ -52,7 +52,7 @@ func main() {
 		r := gin.H{"method": param.Method, "StatusCode": param.StatusCode, "ClientIP": param.ClientIP,
 			"TimeStamp": param.TimeStamp.Format(time.RFC1123), "Path": param.Path, "Request.Proto": param.Request.Proto,
 			"Latency": param.Latency, "User-Agent": param.Request.UserAgent(), "ErrorMessage": param.ErrorMessage}
-		return fmt.Sprintf("%v\n", r)
+		return fmt.Sprintf("%+v\n", r)
 	}))
 	r.Use(gin.Recovery())
 	r.GET("/version", func(c *gin.Context) {
@@ -190,7 +190,7 @@ func parseArgs() {
 		loadConfigFromArgsConfigStruct(argsConfig.ArgConfigInit())
 		return nil
 	})
-	flag.StringVar(&loginArg, "login", "", "add account password auth for all resource.\nexample: \"admin admin\"")
+	flag.StringVar(&loginArg, "login", "", "add account password auth for all resource.\nexample: \"admin:admin\"")
 	flag.Parse()
 	if httpsArg != "" {
 		https := strings.Split(httpsArg, " ")
@@ -199,7 +199,7 @@ func parseArgs() {
 	}
 	if loginArg != "" {
 		fmt.Printf("login [%s]\n", loginArg)
-		loginArgs := strings.Split(loginArg, " ")
+		loginArgs := strings.Split(loginArg, ":")
 		login.open = true
 		login.account, login.password = loginArgs[0], loginArgs[1]
 	}
