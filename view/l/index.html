@@ -33,6 +33,7 @@
         float: none;
         display: inline-block;
       }
+
       .fls li {
         border: black solid 3px;
       }
@@ -188,7 +189,8 @@
       <li>
         <div>
           Mode<br>
-          <input type="radio" name="pageMode" onclick="pageModeToggle()" value="List" checked="checked" id="pageModeList">
+          <input type="radio" name="pageMode" onclick="pageModeToggle()" value="List" checked="checked"
+            id="pageModeList">
           <label for="pageModeList">List</label><br>
           <input type="radio" name="pageMode" onclick="pageModeToggle()" value="Photo" id="pageModePhoto"> <label
             for="pageModePhoto">Photo</label>
@@ -208,11 +210,14 @@
         </select>
       </li>
       <form>
-        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=document.querySelector("#widthRange").value+"vw");document.querySelector("#photoWidth").textContent=document.querySelector("#widthRange").value'>
-          Photo Width <br><input id="widthRange" type="range" min="50" max="150" value="100"
-            ><label id="photoWidth">100</label></li>
-        <li class="divHidden photoElement" onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=document.querySelector("#heightRange").value+"vh");document.querySelector("#photoHeight").textContent=document.querySelector("#heightRange").value'>
-          Photo Height <br><input id="heightRange" type="range" min="50" max="150" value="100"><label id="photoHeight">100</label><br>
+        <li class="divHidden photoElement"
+          onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.width=document.querySelector("#widthRange").value+"vw");document.querySelector("#photoWidth").textContent=document.querySelector("#widthRange").value'>
+          Photo Width <br><input id="widthRange" type="range" min="50" max="150" value="90"><label
+            id="photoWidth">90</label></li>
+        <li class="divHidden photoElement"
+          onmouseleave='[...document.querySelectorAll("#right img")].map(x=>x.style.height=document.querySelector("#heightRange").value+"vh");document.querySelector("#photoHeight").textContent=document.querySelector("#heightRange").value'>
+          Photo Height <br><input id="heightRange" type="range" min="50" max="150" value="100"><label
+            id="photoHeight">100</label><br>
         </li>
         <li class="divHidden photoElement"><input type="reset" value="Reset" />&emsp;<input type="button"
             onclick='[...document.querySelectorAll("#right img")].map(x=>{x.style.height="auto";x.style.width="auto";})'
@@ -464,6 +469,7 @@
     var photoList = [];
     var configStack = {
       "folderMode": "1",
+      "img2Mode": false,
       "showIndex": 0
     };
     function updatePhoto(u) {
@@ -493,7 +499,7 @@
       }
       // update chain
       updateImg(0);
-      viewModeChange(document.getElementById("photoMode"))
+      viewModeChange(document.getElementById("photoMode"));
     }
 
     function updateImg(i) {
@@ -501,11 +507,27 @@
       document.title = `${photoList[configStack.showIndex].Name}  - Simserver`;
       const urlValue = document.getElementById("url").value;
       document.getElementById("show").src = baseUrl + "/api/dl/n/" + urlValue + (urlValue.endsWith("/") ? "" : "/") + photoList[i].Name;
-      document.getElementById("show").style.height = window.innerHeight;
       var lis = utils.map(document.querySelectorAll("#left li"), x => x);
       lis.forEach(x => {
         x.setAttribute("class", lis.indexOf(x) === configStack.showIndex ? "curli" : "");
       });
+      if (configStack.img2Mode) {
+        if (document.querySelectorAll("#right img").length > 1) {
+          document.querySelectorAll("#right img").forEach(x => {
+            if (x.id != "show") {
+              x.remove();
+            }
+          });
+        }
+        photoList.forEach(x => {
+          if (photoList.indexOf(x) != configStack.showIndex) 
+            document.querySelector("#right").append(document.createRange().createContextualFragment(`<img name="showImgs" src="${baseUrl + "/api/dl/n/" + urlValue + (urlValue.endsWith("/") ? "" : "/") + x.Name}" />`))
+        })
+      } else if (!configStack.img2Mode && document.querySelectorAll("#right img").length > 1) {
+        document.querySelectorAll("#right img").forEach(x => {
+          if (x.id != "show") x.remove();
+        });
+      }
     }
 
     function nextImg() {
@@ -527,6 +549,9 @@
           case "doubleFolder":
             configStack.folderMode = "1";
             break;
+          case "img_2":
+            configStack.img2Mode = false;
+            break;
           default:
             break;
         }
@@ -535,6 +560,9 @@
         switch (e.value) {
           case "doubleFolder":
             configStack.folderMode = "2";
+            break;
+          case "img_2":
+            configStack.img2Mode = true;
             break;
           default:
             break;
