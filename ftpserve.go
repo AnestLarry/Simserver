@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -58,9 +59,15 @@ func main() {
 	r.GET("/version", func(c *gin.Context) {
 		c.JSON(200, gin.H{"version": Version})
 	})
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": `It's a file downloadGroup server. You can transfer the file with the machine.`})
-	})
+	if viewGroup.View_open {
+		r.GET("/", func(c *gin.Context) {
+			c.Redirect(http.StatusPermanentRedirect, "/view/")
+		})
+	} else {
+		r.GET("/", func(c *gin.Context) {
+			c.JSON(200, gin.H{"message": `It's a file downloadGroup server. You can transfer the file with the machine.`})
+		})
+	}
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
