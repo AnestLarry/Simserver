@@ -24,8 +24,14 @@
               (urlStack.length > 1 ? urlStack.join("/") : urlStack[0])
           )
         );
-        flpc.fileList = res.fileList.sort(client.sortFunction(panel.sortedBy));
-        flpc.folderList = res.folderList.sort(client.sortFunction(panel.sortedBy));
+        if (res.fileList !== null)
+          flpc.fileList = res.fileList.sort(
+            client.sortFunction(panel.sortedBy)
+          );
+        if (res.folderList !== null)
+          flpc.folderList = res.folderList.sort(
+            client.sortFunction(panel.sortedBy)
+          );
       } else {
         flpc.fileList.sort(client.sortFunction(panel.sortedBy));
         flpc.folderList.sort(client.sortFunction(panel.sortedBy));
