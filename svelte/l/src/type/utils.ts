@@ -1,4 +1,4 @@
 interface LSResponse{
-    fileList:LSItem[];
-    folderList:LSItem[];
+    fileList:LSItem[],
+    folderList:LSItem[],
 }
