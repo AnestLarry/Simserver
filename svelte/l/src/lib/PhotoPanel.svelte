@@ -9,7 +9,7 @@
   import { client } from "../utils";
   export let panel: Panel;
 
-  var ppc: PhotoPanelConfig = {
+  export let ppc: PhotoPanelConfig = {
     imgList: [],
     showIndex: 0,
     listenIndex: -1,
@@ -72,8 +72,6 @@
   }
   init();
 </script>
-
-<Button on:click={() => (ppc.drawerHidden = false)}>Show Image List</Button>
 
 <Drawer transitionType="fly" {transitionParams} bind:hidden={ppc.drawerHidden}>
   {#if ppc.imgList.length > 0}

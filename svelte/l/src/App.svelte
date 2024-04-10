@@ -10,6 +10,7 @@
     Button,
     Radio,
   } from "flowbite-svelte";
+  let ppc: PhotoPanelConfig;
   let panel: Panel = {
     baseUrl: window.location.protocol + "//" + window.location.host,
     workUrl: "/",
@@ -110,15 +111,15 @@
     }}
   />
   <div class="config">
-    <Card
-      class="card"
-      on:click={() => {
-        panel.popUrlStack();
-      }}
-    >
-      Up To Prev Folder
-    </Card>
     <Card class="card">
+      <Button
+        on:click={() => {
+          panel.popUrlStack();
+        }}
+      >
+        Up To Prev Folder
+      </Button>
+      <br />
       <Button
         on:click={() => {
           window.open(panel.baseUrl + "/api/dl/zip/" + panel.workUrl, "_blank");
@@ -166,6 +167,10 @@
           ]}
           bind:value={panel.photo.photoMode}
         />
+        <br />
+        <Button on:click={() => (ppc.drawerHidden = false)}>
+          Show Image List
+        </Button>
       </Card>
       <form>
         <Card class="card">
@@ -218,7 +223,7 @@
     {#if panel.pageMode === "List"}
       <FileListPanel {panel} />
     {:else if panel.pageMode === "Photo"}
-      <PhotoPanel {panel} />
+      <PhotoPanel {panel} bind:ppc />
     {/if}
   </div>
 </div>
