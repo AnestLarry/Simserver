@@ -14,6 +14,15 @@
     showIndex: 0,
     listenIndex: -1,
     drawerHidden: true,
+    showDrawer: () => {
+      ppc.drawerHidden = false;
+      setTimeout(()=>{
+        var cur = document.querySelector("button[aria-current='true']");
+        if(cur !== null){
+          cur.focus();
+        }
+      },50);
+    },
     fresh: (f: boolean) => {
       if (!f) {
         return;
@@ -39,7 +48,6 @@
           ""
         );
       }
-      console.log(ppc.imgList);
     },
     setShowIndex: (i: number) => {
       if (i < ppc.imgList.length) {
@@ -81,7 +89,6 @@
       let:item
       style="word-break:break-all;"
       on:click={(e) => {
-        console.log(e);
         ppc.setShowIndex(e.detail.imgIndex);
       }}
     >

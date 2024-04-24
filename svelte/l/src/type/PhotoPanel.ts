@@ -3,7 +3,8 @@ interface PhotoPanelConfig {
     listenIndex: number,
     showIndex: number,
     drawerHidden: boolean,
+    showDrawer: () => void,
     fresh: (f: boolean) => void,
     setShowIndex: (i: number) => void,
-    getListGroup:()=>any,
+    getListGroup: () => any,
 }

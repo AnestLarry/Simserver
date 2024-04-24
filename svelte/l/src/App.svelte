@@ -168,7 +168,7 @@
           bind:value={panel.photo.photoMode}
         />
         <br />
-        <Button on:click={() => (ppc.drawerHidden = false)}>
+        <Button on:click={()=>{ppc.showDrawer();}}>
           Show Image List
         </Button>
       </Card>
