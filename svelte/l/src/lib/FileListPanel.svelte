@@ -17,6 +17,8 @@
       var urlStack = JSON.parse(urlStack_localStorage);
       flpc.urlStack = urlStack;
       if (f) {
+        flpc.fileList = [];
+        flpc.folderList = [];
         var res: LSResponse = JSON.parse(
           http.Get(
             panel.baseUrl +

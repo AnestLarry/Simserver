@@ -35,8 +35,8 @@ export const client = {
   sortFunction: (x: string) => {
 
     var res = {
-      NameOrder: (a: LSItem, b: LSItem) => a.Name.localeCompare(b.Name),
-      NameReverse: (a: LSItem, b: LSItem) => -a.Name.localeCompare(b.Name),
+      NameOrder: (a: LSItem, b: LSItem) => a.Name.length == b.Name.length?a.Name.localeCompare(b.Name):(a.Name.length -b.Name.length),
+      NameReverse: (a: LSItem, b: LSItem) => -(a.Name.length == b.Name.length?a.Name.localeCompare(b.Name):(a.Name.length -b.Name.length)),
       TimeOrder: (a: LSItem, b: LSItem) => Number(a.ModTime - b.ModTime),
       TimeReverse: (a: LSItem, b: LSItem) => Number(b.ModTime - a.ModTime),
     }[x];
