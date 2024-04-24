@@ -1,6 +1,7 @@
 <script lang="ts">
-  import PhotoPanel from "./lib/PhotoPanel.svelte";
-  import FileListPanel from "./lib/FileListPanel.svelte";
+  import PhotoPanel from "./pages/PhotoPanel.svelte";
+  import FileListPanel from "./pages/FileListPanel.svelte";
+  import Toggleable from "./lib/Toggleable.svelte";
   import {
     Input,
     Card,
@@ -28,6 +29,7 @@
       },
     },
     workUrlListening: [],
+    hiddenPanel: true,
     pushUrlStack: (x: string) => {
       var urlStack_localStorage = localStorage.getItem("urlStack");
       if (urlStack_localStorage != null) {
@@ -101,122 +103,143 @@
 
 <div id="list">
   <h1>Items:</h1>
-  <Input
-    bind:value={panel.workUrl}
-    on:mouseleave={() => {
-      updateWorkUrl(true);
-    }}
-    on:blur={() => {
-      updateWorkUrl(true);
-    }}
-  />
+  <div class="flex h-10">
+    <Input
+      bind:value={panel.workUrl}
+      on:mouseleave={() => {
+        updateWorkUrl(true);
+      }}
+      on:blur={() => {
+        updateWorkUrl(true);
+      }}
+    />
+    <Button
+      on:click={() => {
+        panel.hiddenPanel = !panel.hiddenPanel;
+        console.log(panel.hiddenPanel);
+      }}
+      >Hidden Panel
+    </Button>
+  </div>
   <div class="config">
-    <Card class="card">
-      <Button
-        on:click={() => {
-          panel.popUrlStack();
-        }}
-      >
-        Up To Prev Folder
-      </Button>
-      <br />
-      <Button
-        on:click={() => {
-          window.open(panel.baseUrl + "/api/dl/zip/" + panel.workUrl, "_blank");
-        }}
-      >
-        pack this folder
-      </Button>
-    </Card>
-    <Card class="card">
-      <Label>
-        Page Mode: {panel.pageMode}
-        <Radio name="pageMode" bind:group={panel.pageMode} value="List">
-          List
-        </Radio>
-        <Radio name="pageMode" bind:group={panel.pageMode} value="Photo">
-          Photo
-        </Radio>
-      </Label>
-    </Card>
-    <Card class="card">
-      <Label>
-        SortBy
-        <Select
-          items={[
-            { value: "NameOrder", name: "NameOrder" },
-            { value: "NameReverse", name: "NameReverse" },
-            { value: "TimeOrder", name: "TimeOrder" },
-            { value: "TimeReverse", name: "TimeReverse" },
-          ]}
-          bind:value={panel.sortedBy}
-          on:change={() => {
-            updateWorkUrl(false);
-          }}
-        />
-      </Label>
-    </Card>
-    {#if panel.pageMode === "Photo"}
+    <Toggleable visible={panel.hiddenPanel}>
       <Card class="card">
-        Photo Mode<br />
-        <MultiSelect
-          style="width: 100%;"
-          items={[
-            { value: "img_2", name: "multiple" },
-            { value: "doubleFolder", name: "double folder" },
-          ]}
-          bind:value={panel.photo.photoMode}
-        />
+        <Button
+          on:click={() => {
+            panel.popUrlStack();
+          }}
+        >
+          Up To Prev Folder
+        </Button>
         <br />
-        <Button on:click={()=>{ppc.showDrawer();}}>
-          Show Image List
+        <Button
+          on:click={() => {
+            window.open(
+              panel.baseUrl + "/api/dl/zip/" + panel.workUrl,
+              "_blank"
+            );
+          }}
+        >
+          pack this folder
         </Button>
       </Card>
-      <form>
+      <Card
+        class="card"
+        style="visibility:{panel.hiddenPanel ? 'none' : 'visible'}"
+      >
+        <Label>
+          Page Mode: {panel.pageMode}
+          <Radio name="pageMode" bind:group={panel.pageMode} value="List">
+            List
+          </Radio>
+          <Radio name="pageMode" bind:group={panel.pageMode} value="Photo">
+            Photo
+          </Radio>
+        </Label>
+      </Card>
+      <Card class="card">
+        <Label>
+          SortBy
+          <Select
+            items={[
+              { value: "NameOrder", name: "NameOrder" },
+              { value: "NameReverse", name: "NameReverse" },
+              { value: "TimeOrder", name: "TimeOrder" },
+              { value: "TimeReverse", name: "TimeReverse" },
+            ]}
+            bind:value={panel.sortedBy}
+            on:change={() => {
+              updateWorkUrl(false);
+            }}
+          />
+        </Label>
+      </Card>
+      {#if panel.pageMode === "Photo"}
         <Card class="card">
-          <Label>
-            Photo Width
-            <input
-              type="range"
-              min="50"
-              max="150"
-              bind:value={panel.photo.sizeRange.widthRange}
-              on:mouseleave={() => panel.photo.sizeRange.updateRange()}
-            />
-            {panel.photo.sizeRange.widthRange}
-          </Label>
-          <Label>
-            Photo Height
-            <input
-              type="range"
-              min="50"
-              max="150"
-              bind:value={panel.photo.sizeRange.heightRange}
-              on:mouseleave={() => panel.photo.sizeRange.updateRange()}
-            />
-            {panel.photo.sizeRange.heightRange}
-          </Label><br />
+          Photo Mode<br />
+          <MultiSelect
+            style="width: 100%;"
+            items={[
+              { value: "img_2", name: "multiple" },
+              { value: "doubleFolder", name: "double folder" },
+            ]}
+            bind:value={panel.photo.photoMode}
+          />
+          <br />
           <Button
-            color="green"
             on:click={() => {
-              panel.photo.sizeRange.widthRange = 100;
-              panel.photo.sizeRange.heightRange = 100;
+              ppc.showDrawer();
             }}
           >
-            Reset
-          </Button>
-          &emsp;
-          <Button
-            color="light"
-            on:click={() => {
-              panel.photo.sizeRange.isApply = !panel.photo.sizeRange.isApply;
-            }}
-          >
-            Toggle Effective
+            Show Image List
           </Button>
         </Card>
-      </form>
-    {/if}
+        <form>
+          <Card class="card">
+            <Label>
+              Photo Width
+              <input
+                type="range"
+                min="50"
+                max="150"
+                bind:value={panel.photo.sizeRange.widthRange}
+                on:mouseleave={() => panel.photo.sizeRange.updateRange()}
+              />
+              {panel.photo.sizeRange.widthRange}
+            </Label>
+            <Label>
+              Photo Height
+              <input
+                type="range"
+                min="50"
+                max="150"
+                bind:value={panel.photo.sizeRange.heightRange}
+                on:mouseleave={() => panel.photo.sizeRange.updateRange()}
+              />
+              {panel.photo.sizeRange.heightRange}
+            </Label><br />
+            <Button
+              color="green"
+              on:click={() => {
+                panel.photo.sizeRange.widthRange = 100;
+                panel.photo.sizeRange.heightRange = 100;
+              }}
+            >
+              Reset
+            </Button>
+            &emsp;
+            <Button
+              color="light"
+              on:click={() => {
+                panel.photo.sizeRange.isApply = !panel.photo.sizeRange.isApply;
+              }}
+            >
+              Toggle Effective
+            </Button>
+          </Card>
+        </form>
+      {/if}
+    </Toggleable>
   </div>
   <div style="clear: both"></div>
   <div class="subPanel">
@@ -245,6 +268,9 @@
     margin: 1em;
     padding: 1em;
     border: 1px solid black;
+  }
+  .card * {
+    margin: 1em;
   }
   @media screen and (min-width: 1101px) {
     .card {

@@ -5,6 +5,7 @@ interface Panel {
     sortedBy: string,
     photo: Photo,
     workUrlListening: Array<(f: boolean) => void>,
+    hiddenPanel: boolean,
     pushUrlStack: (x: string) => void,
     popUrlStack: () => void,
 }
