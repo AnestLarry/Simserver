@@ -1,10 +1,5 @@
 <script lang="ts">
-  import {
-    Button,
-    Img,
-    Drawer,
-    Listgroup,
-  } from "flowbite-svelte";
+  import { Img, Drawer, Listgroup } from "flowbite-svelte";
   import { sineIn } from "svelte/easing";
   import { client } from "../utils";
   export let panel: Panel;
@@ -16,12 +11,12 @@
     drawerHidden: true,
     showDrawer: () => {
       ppc.drawerHidden = false;
-      setTimeout(()=>{
+      setTimeout(() => {
         var cur = document.querySelector("button[aria-current='true']");
-        if(cur !== null){
+        if (cur !== null) {
           cur.focus();
         }
-      },50);
+      }, 50);
     },
     fresh: (f: boolean) => {
       if (!f) {
@@ -58,7 +53,9 @@
     },
     getListGroup: () => {
       let res: any[] = [];
-      ppc.imgList.forEach((x) => {
+      let imgs = ppc.imgList.map((x) => x);
+      imgs.sort(client.sortFunction("NameLenOrder"));
+      imgs.forEach((x) => {
         let i = ppc.imgList.indexOf(x);
         res.push({
           name: x.Name,

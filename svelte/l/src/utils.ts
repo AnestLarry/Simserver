@@ -19,7 +19,7 @@ export const client = {
       return imgExts.filter(e => x.Name.toLowerCase().endsWith(e)).length > 0 ? x : null;
     }).forEach(x => {
       var i = x;
-      i.Name = prefix+i.Name;
+      i.Name = prefix + i.Name;
       resList.push(i);
     });
     return resList;
@@ -35,8 +35,10 @@ export const client = {
   sortFunction: (x: string) => {
 
     var res = {
-      NameOrder: (a: LSItem, b: LSItem) => a.Name.length == b.Name.length?a.Name.localeCompare(b.Name):(a.Name.length -b.Name.length),
-      NameReverse: (a: LSItem, b: LSItem) => -(a.Name.length == b.Name.length?a.Name.localeCompare(b.Name):(a.Name.length -b.Name.length)),
+      NameOrder: (a: LSItem, b: LSItem) => a.Name.localeCompare(b.Name),
+      NameReverse: (a: LSItem, b: LSItem) => -a.Name.localeCompare(b.Name),
+      NameLenOrder: (a: LSItem, b: LSItem) => a.Name.length == b.Name.length ? a.Name.localeCompare(b.Name) : (a.Name.length - b.Name.length),
+      NameLenReverse: (a: LSItem, b: LSItem) => -(a.Name.length == b.Name.length ? a.Name.localeCompare(b.Name) : (a.Name.length - b.Name.length)),
       TimeOrder: (a: LSItem, b: LSItem) => Number(a.ModTime - b.ModTime),
       TimeReverse: (a: LSItem, b: LSItem) => Number(b.ModTime - a.ModTime),
     }[x];
