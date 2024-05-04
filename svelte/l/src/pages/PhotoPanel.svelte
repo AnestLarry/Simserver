@@ -43,6 +43,7 @@
           ""
         );
       }
+      ppc.setShowIndex(0);
     },
     setShowIndex: (i: number) => {
       if (i < ppc.imgList.length) {
