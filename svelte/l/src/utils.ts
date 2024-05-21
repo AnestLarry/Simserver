@@ -14,7 +14,7 @@ export const client = {
       return [];
     }
     var resList: LSItem[] = [];
-    data["fileList"].sort(client.sortFunction("NameOrder"));
+    data["fileList"].sort(client.sortFunction("NameLenOrder"));
     data["fileList"].filter(x => {
       return imgExts.filter(e => x.Name.toLowerCase().endsWith(e)).length > 0 ? x : null;
     }).forEach(x => {
