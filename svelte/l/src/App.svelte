@@ -157,24 +157,25 @@
           </Radio>
         </Label>
       </Card>
-      <Card class="card">
-        <Label>
-          SortBy
-          <Select
-            items={[
-              { value: "NameOrder", name: "NameOrder" },
-              { value: "NameReverse", name: "NameReverse" },
-              { value: "TimeOrder", name: "TimeOrder" },
-              { value: "TimeReverse", name: "TimeReverse" },
-            ]}
-            bind:value={panel.sortedBy}
-            on:change={() => {
-              updateWorkUrl(false);
-            }}
-          />
-        </Label>
-      </Card>
-      {#if panel.pageMode === "Photo"}
+      {#if panel.pageMode === "List"}
+        <Card class="card">
+          <Label>
+            SortBy
+            <Select
+              items={[
+                { value: "NameOrder", name: "NameOrder" },
+                { value: "NameReverse", name: "NameReverse" },
+                { value: "TimeOrder", name: "TimeOrder" },
+                { value: "TimeReverse", name: "TimeReverse" },
+              ]}
+              bind:value={panel.sortedBy}
+              on:change={() => {
+                updateWorkUrl(false);
+              }}
+            />
+          </Label>
+        </Card>
+      {:else if panel.pageMode === "Photo"}
         <Card class="card">
           Photo Mode<br />
           <MultiSelect

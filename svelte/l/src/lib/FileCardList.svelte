@@ -34,7 +34,7 @@
     margin-bottom: 1rem;
   }
   .card-title{
-    word-wrap: break-all;
+    word-break: break-all;
   }
   @media screen and (min-width: 1101px) {
     .card {
