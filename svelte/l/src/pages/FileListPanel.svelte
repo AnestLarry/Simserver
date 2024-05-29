@@ -104,25 +104,4 @@
     flex-wrap: wrap;
     gap: 1rem;
   }
-  .card {
-    margin-bottom: 1rem;
-  }
-  @media screen and (min-width: 1101px) {
-    .card {
-      flex: 1 1 calc(31% - 1rem);
-      max-width: calc(31% - 1rem);
-    }
-  }
-  @media screen and (max-width: 1100px) and (min-width: 701px) {
-    .card {
-      flex: 1 1 calc(40% - 1rem);
-      max-width: calc(40% - 1rem);
-    }
-  }
-  @media screen and (max-width: 700px) {
-    .card {
-      flex: 1 1 calc(85% - 1rem);
-      min-width: calc(80% - 1rem);
-    }
-  }
 </style>
