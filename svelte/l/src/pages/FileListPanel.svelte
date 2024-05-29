@@ -1,6 +1,7 @@
 <script lang="ts">
+  import FileCardList from "../lib/FileCardList.svelte";
+  import Toggleable from "../lib/Toggleable.svelte";
   import { client, http } from "../utils";
-  import { Card } from "flowbite-svelte";
   export let panel: Panel;
   let flpc: FileListPanelConfig = {
     fileList: [],
@@ -45,6 +46,20 @@
     flpc.listenIndex = panel.workUrlListening.push(flpc.fresh);
   }
   init();
+  const callbacks = {
+    folderCallback: (item: LSItem) => {
+      panel.pushUrlStack(item.Name);
+    },
+    fileCallback: (item: LSItem) => {
+      const url =
+        panel.baseUrl +
+        "/api/dl/n/" +
+        (flpc.urlStack.length == 1 && flpc.urlStack[0] === "/"
+          ? "/" + item.Name
+          : flpc.urlStack.join("/") + "/" + item.Name);
+      window.open(url, "_blank");
+    },
+  };
 </script>
 
 <div class="file-list-panel">
@@ -53,19 +68,13 @@
       <h3>Folders:</h3>
     </summary>
     <div class="card-container">
-      {#if flpc.folderList && flpc.folderList.length > 0}
-        {#each flpc.folderList as LSItem}
-          <Card
-            class="card"
-            on:click={() => {
-              panel.pushUrlStack(LSItem.Name);
-            }}
-          >
-            <h5 class="font-bold">{LSItem.Name}</h5>
-            <p>{new Date(LSItem.ModTime).toLocaleString()}</p>
-          </Card>
-        {/each}
-      {/if}
+      <Toggleable visible={flpc.folderList && flpc.folderList.length > 0}>
+        <FileCardList
+          list={flpc.folderList}
+          callback={callbacks.folderCallback}
+          showSize={false}
+        />
+      </Toggleable>
     </div>
   </details>
   <div style="clear: both"></div>
@@ -74,22 +83,13 @@
       <h3>Files:</h3>
     </summary>
     <div class="card-container">
-      {#if flpc.fileList && flpc.fileList.length > 0}
-        {#each flpc.fileList as LSItem}
-          <Card
-            class="card"
-            href={panel.baseUrl +
-              "/api/dl/n/" +
-              (flpc.urlStack.length == 1 && flpc.urlStack[0] === "/"
-                ? "/" + LSItem.Name
-                : flpc.urlStack.join("/") + "/" + LSItem.Name)}
-          >
-            <h5 class="font-bold">{LSItem.Name}</h5>
-            <p>{new Date(LSItem.ModTime).toLocaleString()}</p>
-            <p>{LSItem.Size} MB</p>
-          </Card>
-        {/each}
-      {/if}
+      <Toggleable visible={flpc.fileList && flpc.fileList.length > 0}>
+        <FileCardList
+          list={flpc.fileList}
+          showSize={true}
+          callback={callbacks.fileCallback}
+        />
+      </Toggleable>
     </div>
   </details>
 </div>

@@ -1,5 +1,5 @@
 <script>
-  export let visible = true;
+  export let visible;
 </script>
 
 {#if visible}
