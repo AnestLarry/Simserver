@@ -2,12 +2,14 @@
   import FileCardList from "../lib/FileCardList.svelte";
   import Toggleable from "../lib/Toggleable.svelte";
   import { client, http } from "../utils";
+  import { Input } from "flowbite-svelte";
   export let panel: Panel;
   let flpc: FileListPanelConfig = {
     fileList: [],
     folderList: [],
     urlStack: [],
     listenIndex: -1,
+    filterCond: "",
     fresh: (f: boolean) => {
       if (panel.pageMode !== "List") {
         return;
@@ -40,6 +42,12 @@
         flpc.folderList.sort(client.sortFunction(panel.sortedBy));
       }
     },
+    fileListFiltered: function (): LSItem[] {
+      return callbacks.filterCallback(flpc.fileList);
+    },
+    folderListFiltered: function (): LSItem[] {
+      return callbacks.filterCallback(flpc.folderList);
+    },
   };
   function init() {
     flpc.fresh(true);
@@ -59,10 +67,14 @@
           : flpc.urlStack.join("/") + "/" + item.Name);
       window.open(url, "_blank");
     },
+    filterCallback: (list: LSItem[]): LSItem[] => {
+      return list.filter((x) => x.Name.indexOf(flpc.filterCond) > -1);
+    },
   };
 </script>
 
 <div class="file-list-panel">
+  <Input bind:value={flpc.filterCond} placeholder="filter"/>
   <details>
     <summary>
       <h3>Folders:</h3>
@@ -70,7 +82,7 @@
     <div class="card-container">
       <Toggleable visible={flpc.folderList && flpc.folderList.length > 0}>
         <FileCardList
-          list={flpc.folderList}
+          list={flpc.folderListFiltered()}
           callback={callbacks.folderCallback}
           showSize={false}
         />
@@ -85,7 +97,7 @@
     <div class="card-container">
       <Toggleable visible={flpc.fileList && flpc.fileList.length > 0}>
         <FileCardList
-          list={flpc.fileList}
+          list={flpc.fileListFiltered()}
           showSize={true}
           callback={callbacks.fileCallback}
         />

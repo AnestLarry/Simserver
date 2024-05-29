@@ -8,5 +8,8 @@ interface FileListPanelConfig {
     folderList: LSItem[],
     urlStack: string[],
     listenIndex: number,
+    filterCond: string,
+    fileListFiltered: () => LSItem[],
+    folderListFiltered: () => LSItem[],
     fresh: (f: boolean) => void,
 }
