@@ -1,6 +1,7 @@
 <script lang="ts">
   import PhotoPanel from "./pages/PhotoPanel.svelte";
   import FileListPanel from "./pages/FileListPanel.svelte";
+  import ChatBoard from "./pages/ChatBoard.svelte";
   import Toggleable from "./lib/Toggleable.svelte";
   import {
     Input,
@@ -11,6 +12,7 @@
     Button,
     Radio,
   } from "flowbite-svelte";
+
   let ppc: PhotoPanelConfig;
   let panel: Panel = {
     baseUrl: window.location.protocol + "//" + window.location.host,
@@ -155,6 +157,9 @@
           <Radio name="pageMode" bind:group={panel.pageMode} value="Photo">
             Photo
           </Radio>
+          <Radio name="pageMode" bind:group={panel.pageMode} value="ChatBoard">
+            ChatBoard
+          </Radio>
         </Label>
       </Card>
       {#if panel.pageMode === "List"}
@@ -248,6 +253,8 @@
       <FileListPanel {panel} />
     {:else if panel.pageMode === "Photo"}
       <PhotoPanel {panel} bind:ppc />
+    {:else if panel.pageMode === "ChatBoard"}
+      <ChatBoard />
     {/if}
   </div>
 </div>

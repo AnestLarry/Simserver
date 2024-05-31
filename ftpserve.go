@@ -2,6 +2,7 @@ package main
 
 import (
 	"Simserver/Libs"
+	"Simserver/chatBoard"
 	argsConfig "Simserver/config"
 	"Simserver/downloadGroup"
 	"Simserver/uploadGroup"
@@ -122,6 +123,8 @@ func routerGroup_init(r *gin.Engine) {
 	downloadGroup.Downloader_routerGroup_init(r)
 	// View routerGroup
 	viewGroup.View_routerGroup_init(r, viewFiles)
+	// ChatBoard routerGroup
+	chatBoard.ChatBoard_routerGroup_init(r)
 }
 
 func restoreFileName() {

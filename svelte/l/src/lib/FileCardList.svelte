@@ -33,7 +33,7 @@
   .card {
     margin-bottom: 1rem;
   }
-  .card-title{
+  .card-title {
     word-break: break-all;
   }
   @media screen and (min-width: 1101px) {

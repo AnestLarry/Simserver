@@ -74,7 +74,7 @@
 </script>
 
 <div class="file-list-panel">
-  <Input bind:value={flpc.filterCond} placeholder="filter"/>
+  <Input bind:value={flpc.filterCond} placeholder="filter" />
   <details>
     <summary>
       <h3>Folders:</h3>
