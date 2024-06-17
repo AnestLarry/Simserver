@@ -25,14 +25,14 @@
 
     ws.onmessage = (event) => {
       let bm: BroadcastMessage = JSON.parse(event.data);
-      messages = [...messages, bm];
+      messages = [bm, ...messages];
     };
 
     ws.onclose = (event) => {
       console.log("WebSocket connection closed.", event);
       if (retryCount < maxRetryCount) {
         retryCount++;
-        retryTimeout *= 2;
+        retryTimeout *= 2; // 使用指数退避策略增加重连超时时间
         setTimeout(connect, retryTimeout);
       }
     };
@@ -58,6 +58,10 @@
     }
   }
 
+  function clearMessage() {
+    messages = [];
+  }
+
   function handleKeydown(event) {
     if (event.key === "Enter") {
       sendMessage();
@@ -78,7 +82,9 @@
     on:keydown={handleKeydown}
     placeholder="Type your message here"
   />
-  <Button on:click={sendMessage}>Send</Button>
+  <Button on:click={sendMessage}>Send</Button>  <Button
+    on:click={clearMessage}>Clear</Button
+  >
 </div>
 
 <ul>
