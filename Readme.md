@@ -83,9 +83,8 @@ explain for commands.
 * `-view` Open view mode.
   - use view-plugins.
   - Build-in plugins:
-    * h5player :  xgplayer@2.9.6
-    * photoViewer : easy to show photos which in a folder
-    * l : view of folder(origin `dls`)
+    * l: An easy-to-use file manager
+    * upload: Upload files 
 * `-login` add basic auth for all resources.
   - `-login account password`
     - account: string without blank string.
