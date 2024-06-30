@@ -2,6 +2,7 @@ package main
 
 import (
 	"Simserver/Libs"
+	"Simserver/chatBoard"
 	argsConfig "Simserver/config"
 	"Simserver/downloadGroup"
 	"Simserver/uploadGroup"
@@ -10,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -25,7 +27,7 @@ var (
 		account  string
 		password string
 	}{}
-	Version = "Win, 2023"
+	Version = "Sum, 2024"
 )
 
 var (
@@ -58,9 +60,15 @@ func main() {
 	r.GET("/version", func(c *gin.Context) {
 		c.JSON(200, gin.H{"version": Version})
 	})
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": `It's a file downloadGroup server. You can transfer the file with the machine.`})
-	})
+	if viewGroup.View_open {
+		r.GET("/", func(c *gin.Context) {
+			c.Redirect(http.StatusPermanentRedirect, "/view/")
+		})
+	} else {
+		r.GET("/", func(c *gin.Context) {
+			c.JSON(200, gin.H{"message": `It's a file downloadGroup server. You can transfer the file with the machine.`})
+		})
+	}
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
@@ -115,6 +123,8 @@ func routerGroup_init(r *gin.Engine) {
 	downloadGroup.Downloader_routerGroup_init(r)
 	// View routerGroup
 	viewGroup.View_routerGroup_init(r, viewFiles)
+	// ChatBoard routerGroup
+	chatBoard.ChatBoard_routerGroup_init(r)
 }
 
 func restoreFileName() {
