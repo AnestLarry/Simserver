@@ -71,9 +71,7 @@
 
 <div>
   <p>
-    Status: {ws != null && ws.readyState === ws.CONNECTING
-      ? "CONNECTING"
-      : "Fail"}
+    Status: {#if ws != null && ws.readyState === ws.OPEN}<Button color="green" pill>CONNECTING</Button>{:else}<Button color="red" pill>Fail</Button>{/if}
   </p>
   <Input type="text" bind:value={username} placeholder="username" />
   <Textarea
