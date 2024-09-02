@@ -26,6 +26,21 @@ type BroadcastMessage struct {
 	Timestamp string `json:"timestamp"`
 }
 
+var (
+	ChatBoard_open = false
+)
+
+func chatBoard_middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		pathDict := map[string]bool{"/api/chatBoard/chat": ChatBoard_open, "/api/chatBoard/health": ChatBoard_open}
+		v, ok := pathDict[c.FullPath()]
+		if !ok || !v {
+			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})
+			c.Abort()
+		}
+	}
+}
+
 func NewChatRoom() *ChatRoom {
 	return &ChatRoom{
 		clients:    make(map[*websocket.Conn]bool),
@@ -61,6 +76,7 @@ func ChatBoard_routerGroup_init(router *gin.Engine) {
 	room := NewChatRoom()
 	go room.run()
 	chatBoardApiGroup := router.Group("/api/chatBoard")
+	chatBoardApiGroup.Use(chatBoard_middleware())
 	chatBoardApiGroup.GET("/chat", func(c *gin.Context) {
 		conn, err := (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
@@ -94,5 +110,8 @@ func ChatBoard_routerGroup_init(router *gin.Engine) {
 			room.broadcast <- jsonMsg
 		}
 		room.register <- conn
+	})
+	chatBoardApiGroup.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "OK"})
 	})
 }

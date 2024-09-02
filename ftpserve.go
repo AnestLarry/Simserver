@@ -171,6 +171,7 @@ func parseArgs() {
 	flag.BoolVar(&downloadGroup.Zip_open, "zip", false, "open zip mode")
 	flag.BoolVar(&downloadGroup.DownloadCode_open, "dC", false, "open download_code mode")
 	flag.BoolVar(&viewGroup.View_open, "view", false, "open view mode")
+	flag.BoolVar(&chatBoard.ChatBoard_open, "chatBoard", false, "open chatBoard mode")
 	flag.Func("log", "open log file", func(s string) error {
 		log_file_open = true
 		gin.DisableConsoleColor()
