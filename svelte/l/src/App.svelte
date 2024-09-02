@@ -152,6 +152,7 @@
               { value: "List", name: "List" },
               { value: "Photo", name: "Photo" },
               { value: "ChatBoard", name: "ChatBoard" },
+              { value: "Upload", name: "Upload" },
             ]}
             bind:value={panel.pageMode}
           />
