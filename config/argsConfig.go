@@ -12,6 +12,7 @@ type ArgConfigStruct struct {
 	Zip          bool     `json:"zip"`
 	DownloadCode bool     `json:"downloadCode"`
 	Upload       bool     `json:"upload"`
+	ChatBoard    bool     `json:"chatBoard"`
 	Https        []string `json:"https"`
 	Log          bool     `json:"log"`
 	Ip           string   `json:"ip"`
