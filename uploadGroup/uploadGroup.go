@@ -2,15 +2,18 @@ package uploadGroup
 
 import (
 	"Simserver/Libs"
+	"Simserver/config"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
 	Upload_open = false
+	acs         = argsConfig.ArgConfigInit()
 )
 
 func upload_middleware() gin.HandlerFunc {
@@ -42,7 +45,11 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.Engine) {
 			if !Libs.LibsXExists(folder) {
 				os.Mkdir(folder, 0764)
 			}
-			c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
+			if acs.SecureExt {
+				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
+			} else {
+				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", folder, file.Filename))
+			}
 		}
 		c.JSON(200, gin.H{"message": "OK"})
 
