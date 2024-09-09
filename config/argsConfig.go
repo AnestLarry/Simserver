@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"sync"
 )
 
 type ArgConfigStruct struct {
@@ -25,7 +26,27 @@ type ArgConfigStruct struct {
 	} `json:"login"`
 }
 
-func ArgConfigInit() ArgConfigStruct {
+var (
+	acs = ArgConfigStruct{
+		Ls:           false,
+		Zip:          false,
+		DownloadCode: false,
+		Upload:       false,
+		ChatBoard:    false,
+		Https:        []string{},
+		Log:          false,
+		Ip:           "0.0.0.0",
+		Port:         "5000",
+		View:         false,
+		Login: struct {
+			Open     bool   `json:"open"`
+			Account  string `json:"account"`
+			Password string `json:"password"`
+		}{Open: false, Account: "", Password: ""},
+	}
+)
+
+func loadConfig() {
 	if Libs.LibsXExists("config.json") {
 		if Libs.LibsXIsDir("config.json") {
 			panic("'config.json' is not a file.")
@@ -36,30 +57,12 @@ func ArgConfigInit() ArgConfigStruct {
 		}
 		defer configJson.Close()
 		byteValue, _ := io.ReadAll(configJson)
-		var acs ArgConfigStruct
 		err = json.Unmarshal(byteValue, &acs)
 		if err != nil {
 			panic(err)
 		}
-		return acs
 	} else {
-		acs := ArgConfigStruct{
-			Ls:           false,
-			Zip:          false,
-			DownloadCode: false,
-			Upload:       false,
-			ChatBoard:    false,
-			Https:        []string{},
-			Log:          false,
-			Ip:           "0.0.0.0",
-			Port:         "5000",
-			View:         false,
-			Login: struct {
-				Open     bool   `json:"open"`
-				Account  string `json:"account"`
-				Password string `json:"password"`
-			}{Open: false, Account: "", Password: ""},
-		}
+
 		acsJson, err := json.MarshalIndent(acs, "", "    ")
 		if err != nil {
 			panic(err)
@@ -68,6 +71,11 @@ func ArgConfigInit() ArgConfigStruct {
 		if err != nil {
 			panic(err)
 		}
-		return acs
 	}
+}
+func ArgConfigInit() ArgConfigStruct {
+	sync.OnceFunc(func() {
+		loadConfig()
+	})
+	return acs
 }
