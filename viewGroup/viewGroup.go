@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	View_open = false
+	Enable = false
 )
 
 func view_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !View_open {
+		if !Enable {
 			c.JSON(500, gin.H{"message": "The server is not supported \"view\""})
 			c.Abort()
 		}

@@ -12,13 +12,13 @@ import (
 )
 
 var (
-	Upload_open = false
-	acs         = argsConfig.ArgConfigInit()
+	Enable = false
+	acs    = argsConfig.ArgConfigInit()
 )
 
 func upload_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pathDict := map[string]bool{"/api/upload/": Upload_open, "/api/upload/text": Upload_open}
+		pathDict := map[string]bool{"/api/upload/": Enable, "/api/upload/text": Enable}
 		v, ok := pathDict[c.FullPath()]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})
@@ -45,7 +45,7 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.Engine) {
 			if !Libs.LibsXExists(folder) {
 				os.Mkdir(folder, 0764)
 			}
-			if acs.SecureExt {
+			if acs.Upload.SecureExt {
 				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
 			} else {
 				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", folder, file.Filename))

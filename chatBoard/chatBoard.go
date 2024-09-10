@@ -27,12 +27,12 @@ type BroadcastMessage struct {
 }
 
 var (
-	ChatBoard_open = false
+	EnableChatBoard = false
 )
 
 func chatBoard_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pathDict := map[string]bool{"/api/chatBoard/chat": ChatBoard_open, "/api/chatBoard/health": ChatBoard_open}
+		pathDict := map[string]bool{"/api/chatBoard/chat": EnableChatBoard, "/api/chatBoard/health": EnableChatBoard}
 		v, ok := pathDict[c.FullPath()]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})

@@ -8,43 +8,64 @@ import (
 	"sync"
 )
 
+type downloadArgConfigStruct struct {
+	Ls           bool `json:"ls"`
+	Zip          bool `json:"zip"`
+	DownloadCode bool `json:"downloadCode"`
+}
+type uploadArgConfigStruct struct {
+	Enable    bool `json:"enable"`
+	SecureExt bool `json:"secureExt"`
+}
+type securityLoginArgConfigStruct struct {
+	Enable   bool   `json:"enable"`
+	Account  string `json:"account"`
+	Password string `json:"password"`
+}
+type securityArgConfigStruct struct {
+	Https []string                     `json:"https"`
+	Log   bool                         `json:"log"`
+	Login securityLoginArgConfigStruct `json:"login"`
+}
+type viewArgConfigStruct struct {
+	Enable    bool `json:"enable"`
+	ChatBoard bool `json:"chatBoard"`
+}
 type ArgConfigStruct struct {
-	Ls           bool     `json:"ls"`
-	Zip          bool     `json:"zip"`
-	DownloadCode bool     `json:"downloadCode"`
-	Upload       bool     `json:"upload"`
-	SecureExt    bool     `json:"secureExt"`
-	ChatBoard    bool     `json:"chatBoard"`
-	Https        []string `json:"https"`
-	Log          bool     `json:"log"`
-	Ip           string   `json:"ip"`
-	Port         string   `json:"port"`
-	View         bool     `json:"view"`
-	Login        struct {
-		Open     bool   `json:"open"`
-		Account  string `json:"account"`
-		Password string `json:"password"`
-	} `json:"login"`
+	Download downloadArgConfigStruct `json:"download"`
+	Upload   uploadArgConfigStruct   `json:"upload"`
+	Security securityArgConfigStruct `json:"security"`
+	View     viewArgConfigStruct     `json:"view"`
+	Ip       string                  `json:"ip"`
+	Port     string                  `json:"port"`
 }
 
 var (
 	acs = ArgConfigStruct{
-		Ls:           false,
-		Zip:          false,
-		DownloadCode: false,
-		Upload:       false,
-		SecureExt:    false,
-		ChatBoard:    false,
-		Https:        []string{},
-		Log:          false,
-		Ip:           "0.0.0.0",
-		Port:         "5000",
-		View:         false,
-		Login: struct {
-			Open     bool   `json:"open"`
-			Account  string `json:"account"`
-			Password string `json:"password"`
-		}{Open: false, Account: "", Password: ""},
+		Download: downloadArgConfigStruct{
+			Ls:           false,
+			Zip:          false,
+			DownloadCode: false,
+		},
+		Upload: uploadArgConfigStruct{
+			Enable:    false,
+			SecureExt: true,
+		},
+		Security: securityArgConfigStruct{
+			Https: []string{},
+			Log:   false,
+			Login: securityLoginArgConfigStruct{
+				Enable:   false,
+				Account:  "",
+				Password: "",
+			},
+		},
+		View: viewArgConfigStruct{
+			Enable:    false,
+			ChatBoard: false,
+		},
+		Ip:   "0.0.0.0",
+		Port: "5000",
 	}
 )
 
@@ -64,7 +85,6 @@ func loadConfig() {
 			panic(err)
 		}
 	} else {
-
 		acsJson, err := json.MarshalIndent(acs, "", "    ")
 		if err != nil {
 			panic(err)
@@ -78,6 +98,6 @@ func loadConfig() {
 func ArgConfigInit() ArgConfigStruct {
 	sync.OnceFunc(func() {
 		loadConfig()
-	})
+	})()
 	return acs
 }

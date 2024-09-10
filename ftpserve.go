@@ -38,7 +38,7 @@ var (
 
 func main() {
 	parseArgs()
-	if uploadGroup.Upload_open {
+	if uploadGroup.Enable {
 		if Libs.LibsXExists("./upload") {
 			if !Libs.LibsXIsDir("./upload") {
 				fmt.Println("upload is not a folder!")
@@ -60,7 +60,7 @@ func main() {
 	r.GET("/version", func(c *gin.Context) {
 		c.JSON(200, gin.H{"version": Version})
 	})
-	if viewGroup.View_open {
+	if viewGroup.Enable {
 		r.GET("/", func(c *gin.Context) {
 			c.Redirect(http.StatusPermanentRedirect, "/view/")
 		})
@@ -86,33 +86,33 @@ func main() {
 }
 
 func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
-	downloadGroup.Ls_open = acs.Ls
-	downloadGroup.Zip_open = acs.Zip
-	downloadGroup.DownloadCode_open = acs.DownloadCode
-	uploadGroup.Upload_open = acs.Upload
-	chatBoard.ChatBoard_open = acs.ChatBoard
-	viewGroup.View_open = acs.View
-	log_file_open = acs.Log
-	login.open = acs.Login.Open
-	login.account = acs.Login.Account
-	login.password = acs.Login.Password
+	downloadGroup.EnableLs = acs.Download.Ls
+	downloadGroup.EnableZip = acs.Download.Zip
+	downloadGroup.EnableDownloadCode = acs.Download.DownloadCode
+	uploadGroup.Enable = acs.Upload.Enable
+	chatBoard.EnableChatBoard = acs.View.ChatBoard
+	viewGroup.Enable = acs.View.Enable
+	log_file_open = acs.Security.Log
+	login.open = acs.Security.Login.Enable
+	login.account = acs.Security.Login.Account
+	login.password = acs.Security.Login.Password
 	if acs.Ip != "" {
 		ip = acs.Ip
 	}
 	if acs.Port != "" {
 		port = acs.Port
 	}
-	if len(acs.Https) > 0 {
-		if len(acs.Https) == 2 {
+	if len(acs.Security.Https) > 0 {
+		if len(acs.Security.Https) == 2 {
 			https_open = true
-			pem_file = acs.Https[0]
-			key_file = acs.Https[1]
+			pem_file = acs.Security.Https[0]
+			key_file = acs.Security.Https[1]
 		} else {
 			fmt.Println("config File:\nhttps args nums error.")
 		}
 	}
-	fmt.Printf("ls:%v, view:%v, zip:%v, downCode:%v\nupload:%v, chatBoard:%v, \nlog:%v, https:%v\n",
-		acs.Ls, acs.View, acs.Zip, acs.DownloadCode, acs.Upload, acs.ChatBoard, acs.Log, https_open)
+	fmt.Printf("download:%+v, upload:%+v, view:%+v, \nsecurity:%+v\n",
+		acs.Download, acs.Upload, acs.View, acs.Security)
 }
 
 func routerGroup_init(r *gin.Engine) {
@@ -165,14 +165,14 @@ func parseArgs() {
 		os.Exit(0)
 		return nil
 	})
-	flag.BoolVar(&downloadGroup.Ls_open, "ls", false, "open ls mode")
+	flag.BoolVar(&downloadGroup.EnableLs, "ls", false, "open ls mode")
 	flag.StringVar(&ip, "ip", "0.0.0.0", "set the ip listen")
 	flag.StringVar(&port, "port", "5000", "set the port listen")
-	flag.BoolVar(&uploadGroup.Upload_open, "upload", false, "open upload mode")
-	flag.BoolVar(&downloadGroup.Zip_open, "zip", false, "open zip mode")
-	flag.BoolVar(&downloadGroup.DownloadCode_open, "dC", false, "open download_code mode")
-	flag.BoolVar(&viewGroup.View_open, "view", false, "open view mode")
-	flag.BoolVar(&chatBoard.ChatBoard_open, "chatBoard", false, "open chatBoard mode")
+	flag.BoolVar(&uploadGroup.Enable, "upload", false, "open upload mode")
+	flag.BoolVar(&downloadGroup.EnableZip, "zip", false, "open zip mode")
+	flag.BoolVar(&downloadGroup.EnableDownloadCode, "dC", false, "open download_code mode")
+	flag.BoolVar(&viewGroup.Enable, "view", false, "open view mode")
+	flag.BoolVar(&chatBoard.EnableChatBoard, "chatBoard", false, "open chatBoard mode")
 	flag.Func("log", "open log file", func(s string) error {
 		log_file_open = true
 		gin.DisableConsoleColor()

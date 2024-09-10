@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	Ls_open           = false
-	Zip_open          = false
-	DownloadCode_open = false
-	DownloadCodeMap   = map[string]DownloadCodeItem{}
+	EnableLs           = false
+	EnableZip          = false
+	EnableDownloadCode = false
+	DownloadCodeMap    = map[string]DownloadCodeItem{}
 )
 
 type ItemField struct {
@@ -35,7 +35,7 @@ type DownloadCodeItem struct {
 
 func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine) {
 	routerPage, routerApi := Downloader_routerGroup.Group("/dl"), Downloader_routerGroup.Group("/api/dl")
-	if DownloadCode_open {
+	if EnableDownloadCode {
 		LoadDownloadCodeJson()
 	}
 
@@ -135,7 +135,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine) {
 func download_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()[:strings.LastIndex(c.FullPath(), "/")]
-		pathDict := map[string]bool{"/api/dl/ls": Ls_open, "/api/dl/zip": Zip_open, "/api/dl/downloadCode": DownloadCode_open, "/api/dl/n": true}
+		pathDict := map[string]bool{"/api/dl/ls": EnableLs, "/api/dl/zip": EnableZip, "/api/dl/downloadCode": EnableDownloadCode, "/api/dl/n": true}
 		v, ok := pathDict[path]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", path)})
