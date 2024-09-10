@@ -1,3 +1,5 @@
+/svelte/panel/dist
+/svelte/panel/node_modules
 bin/
 /upload/
 .idea/
