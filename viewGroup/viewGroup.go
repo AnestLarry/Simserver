@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	Enable = false
+	Enable          = false
+	EnableChatBoard = false
 )
 
 func view_middleware() gin.HandlerFunc {
@@ -23,6 +24,9 @@ func view_middleware() gin.HandlerFunc {
 func View_routerGroup_init(View_routerGroup *gin.Engine, viewFiles embed.FS) {
 	routerPage := View_routerGroup.Group("/view")
 	routerApi := View_routerGroup.Group("api/view")
+	// sub route group init
+	ChatBoard_routerGroup_init(routerApi)
+
 	routerPage.Use(view_middleware())
 	routerApi.Use(view_middleware())
 	views := []string{}

@@ -1,4 +1,4 @@
-package chatBoard
+package viewGroup
 
 import (
 	"encoding/json"
@@ -26,13 +26,9 @@ type BroadcastMessage struct {
 	Timestamp string `json:"timestamp"`
 }
 
-var (
-	EnableChatBoard = false
-)
-
 func chatBoard_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pathDict := map[string]bool{"/api/chatBoard/chat": EnableChatBoard, "/api/chatBoard/health": EnableChatBoard}
+		pathDict := map[string]bool{"/api/view/chatBoard/chat": EnableChatBoard, "/api/view/chatBoard/health": EnableChatBoard}
 		v, ok := pathDict[c.FullPath()]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})
@@ -72,10 +68,10 @@ func (room *ChatRoom) run() {
 	}
 }
 
-func ChatBoard_routerGroup_init(router *gin.Engine) {
+func ChatBoard_routerGroup_init(router *gin.RouterGroup) {
 	room := NewChatRoom()
 	go room.run()
-	chatBoardApiGroup := router.Group("/api/chatBoard")
+	chatBoardApiGroup := router.Group("/chatBoard")
 	chatBoardApiGroup.Use(chatBoard_middleware())
 	chatBoardApiGroup.GET("/chat", func(c *gin.Context) {
 		conn, err := (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(c.Writer, c.Request, nil)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"Simserver/Libs"
-	"Simserver/chatBoard"
 	argsConfig "Simserver/config"
 	"Simserver/downloadGroup"
 	"Simserver/uploadGroup"
@@ -90,7 +89,7 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	downloadGroup.EnableZip = acs.Download.Zip
 	downloadGroup.EnableDownloadCode = acs.Download.DownloadCode
 	uploadGroup.Enable = acs.Upload.Enable
-	chatBoard.EnableChatBoard = acs.View.ChatBoard
+	viewGroup.EnableChatBoard = acs.View.ChatBoard
 	viewGroup.Enable = acs.View.Enable
 	log_file_open = acs.Security.Log
 	login.open = acs.Security.Login.Enable
@@ -124,8 +123,6 @@ func routerGroup_init(r *gin.Engine) {
 	downloadGroup.Downloader_routerGroup_init(r)
 	// View routerGroup
 	viewGroup.View_routerGroup_init(r, viewFiles)
-	// ChatBoard routerGroup
-	chatBoard.ChatBoard_routerGroup_init(r)
 }
 
 func restoreFileName() {
@@ -172,7 +169,7 @@ func parseArgs() {
 	flag.BoolVar(&downloadGroup.EnableZip, "zip", false, "open zip mode")
 	flag.BoolVar(&downloadGroup.EnableDownloadCode, "dC", false, "open download_code mode")
 	flag.BoolVar(&viewGroup.Enable, "view", false, "open view mode")
-	flag.BoolVar(&chatBoard.EnableChatBoard, "chatBoard", false, "open chatBoard mode")
+	flag.BoolVar(&viewGroup.EnableChatBoard, "chatBoard", false, "open chatBoard mode")
 	flag.Func("log", "open log file", func(s string) error {
 		log_file_open = true
 		gin.DisableConsoleColor()

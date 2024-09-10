@@ -13,14 +13,14 @@
   let wsStatus: string = "Disabled";
   function connect() {
     axios
-      .get("/api/chatBoard/health")
+      .get("/api/view/chatBoard/health")
       .then((res) => {
         ws = new WebSocket(
           (window.location.protocol.indexOf("https") > -1
             ? "wss://"
             : "ws://") +
             window.location.host +
-            "/api/chatBoard/chat"
+            "/api/view/chatBoard/chat"
         );
 
         ws.onopen = () => {
