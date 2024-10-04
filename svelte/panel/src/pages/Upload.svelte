@@ -1,8 +1,8 @@
-<script>
-  let files;
+<script lang="ts">
+  let files: FileList;
   let progress = 0;
 
-  function handleSubmit(e) {
+  function handleSubmit(e: Event) {
     e.preventDefault();
     const formData = new FormData();
     for (let i = 0; i < files.length; i++) {

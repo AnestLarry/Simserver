@@ -10,9 +10,8 @@
     Label,
     MultiSelect,
     Button,
-    Radio,
   } from "flowbite-svelte";
-
+  import Upload from "./pages/Upload.svelte";
   let ppc: PhotoPanelConfig;
   let panel: Panel = {
     baseUrl: window.location.protocol + "//" + window.location.host,
@@ -145,23 +144,21 @@
           pack this folder
         </Button>
       </Card>
-      <Card
-        class="card"
-        style="visibility:{panel.hiddenPanel ? 'none' : 'visible'}"
-      >
+      <Card class="card">
         <Label>
           Page Mode: {panel.pageMode}
-          <Radio name="pageMode" bind:group={panel.pageMode} value="List">
-            List
-          </Radio>
-          <Radio name="pageMode" bind:group={panel.pageMode} value="Photo">
-            Photo
-          </Radio>
-          <Radio name="pageMode" bind:group={panel.pageMode} value="ChatBoard">
-            ChatBoard
-          </Radio>
+          <Select
+            items={[
+              { value: "List", name: "List" },
+              { value: "Photo", name: "Photo" },
+              { value: "ChatBoard", name: "ChatBoard" },
+              { value: "Upload", name: "Upload" },
+            ]}
+            bind:value={panel.pageMode}
+          />
         </Label>
       </Card>
+      <br />
       {#if panel.pageMode === "List"}
         <Card class="card">
           <Label>
@@ -255,6 +252,8 @@
       <PhotoPanel {panel} bind:ppc />
     {:else if panel.pageMode === "ChatBoard"}
       <ChatBoard />
+    {:else if panel.pageMode === "Upload"}
+      <Upload />
     {/if}
   </div>
 </div>
