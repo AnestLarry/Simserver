@@ -97,15 +97,30 @@ explain for commands.
   - `config.json` Example.
     * ```json
       {
-          "ls": true,
-          "zip": false,
-          "log": true,
-          "upload": true,
-          "downloadCode": true,
-          "https": ["Simserver.cer", "Simserver.pk"],
+          "download": {
+              "ls": false,
+              "zip": false,
+              "downloadCode": false
+          },
+          "upload": {
+              "enable": false,
+              "secureExt": true
+          },
+          "security": {
+              "https": ["Simserver.cer", "Simserver.pvk"],
+              "log": true,
+              "login": {
+                  "enable": false,
+                  "account": "",
+                  "password": ""
+              }
+          },
+          "view": {
+              "enable": true,
+              "chatBoard": true
+          },
           "ip": "0.0.0.0",
-          "port": "5000",
-          "view": true
+          "port": "5000"
       }
       ```
     * You only have to set some args you want, the other will be set to default.
