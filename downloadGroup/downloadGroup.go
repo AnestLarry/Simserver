@@ -2,6 +2,7 @@ package downloadGroup
 
 import (
 	"Simserver/Libs"
+	argsConfig "Simserver/config"
 	"archive/zip"
 	"encoding/json"
 	"fmt"
@@ -15,10 +16,8 @@ import (
 )
 
 var (
-	EnableLs           = false
-	EnableZip          = false
-	EnableDownloadCode = false
-	DownloadCodeMap    = map[string]DownloadCodeItem{}
+	Args            = argsConfig.GetConfig().Download
+	DownloadCodeMap = map[string]DownloadCodeItem{}
 )
 
 type ItemField struct {
@@ -35,7 +34,7 @@ type DownloadCodeItem struct {
 
 func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine) {
 	routerPage, routerApi := Downloader_routerGroup.Group("/dl"), Downloader_routerGroup.Group("/api/dl")
-	if EnableDownloadCode {
+	if Args.DownloadCode {
 		LoadDownloadCodeJson()
 	}
 
@@ -135,7 +134,7 @@ func Downloader_routerGroup_init(Downloader_routerGroup *gin.Engine) {
 func download_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()[:strings.LastIndex(c.FullPath(), "/")]
-		pathDict := map[string]bool{"/api/dl/ls": EnableLs, "/api/dl/zip": EnableZip, "/api/dl/downloadCode": EnableDownloadCode, "/api/dl/n": true}
+		pathDict := map[string]bool{"/api/dl/ls": Args.Ls, "/api/dl/zip": Args.Zip, "/api/dl/downloadCode": Args.DownloadCode, "/api/dl/n": true}
 		v, ok := pathDict[path]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", path)})

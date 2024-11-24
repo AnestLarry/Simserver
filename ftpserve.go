@@ -19,25 +19,19 @@ import (
 )
 
 var (
-	log_file_enable = false
-	https_enable    = false
-	login           = struct {
-		enable   bool
-		account  string
-		password string
-	}{}
+	Args    = argsConfig.GetConfig()
 	Version = "Aut, 2024"
 )
 
 var (
 	//go:embed view
-	viewFiles                    embed.FS
-	ip, port, pem_file, key_file = "0.0.0.0", "5000", "", ""
+	viewFiles embed.FS
+	// ip, port, pem_file, key_file = "0.0.0.0", "5000", "", ""
 )
 
 func main() {
 	parseArgs()
-	if uploadGroup.Enable {
+	if uploadGroup.Args.Enable {
 		if Libs.LibsXExists("./upload") {
 			if !Libs.LibsXIsDir("./upload") {
 				fmt.Println("upload is not a folder!")
@@ -62,7 +56,7 @@ func main() {
 	r.GET("/version", func(c *gin.Context) {
 		c.JSON(200, gin.H{"version": Version})
 	})
-	if viewGroup.Enable {
+	if viewGroup.Args.Enable {
 		r.GET("/", func(c *gin.Context) {
 			c.Redirect(http.StatusPermanentRedirect, "/view/")
 		})
@@ -71,7 +65,7 @@ func main() {
 			c.JSON(200, gin.H{"message": `It's a file downloadGroup server. You can transfer the file with the machine.`})
 		})
 	}
-	if log_file_enable {
+	if Args.Security.Log {
 		gin.DisableConsoleColor()
 		var f *os.File
 		var err error
@@ -92,12 +86,12 @@ func main() {
 		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
 	routerGroup_init(r)
-	fmt.Printf("%s\n%s:%s\n", strings.Repeat("-", 15), ip, port)
+	fmt.Printf("%s\n%s:%s\n", strings.Repeat("-", 15), Args.Ip, Args.Port)
 	var err error
-	if https_enable {
-		err = r.RunTLS(fmt.Sprintf("%s:%s", ip, port), pem_file, key_file)
+	if Args.Security.Https.Enable {
+		err = r.RunTLS(fmt.Sprintf("%s:%s", Args.Ip, Args.Port), Args.Security.Https.KeyFiles[0], Args.Security.Https.KeyFiles[1])
 	} else {
-		err = r.Run(fmt.Sprintf("%s:%s", ip, port))
+		err = r.Run(fmt.Sprintf("%s:%s", Args.Ip, Args.Port))
 	}
 	if err != nil {
 		panic(err)
@@ -105,33 +99,7 @@ func main() {
 }
 
 func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
-	downloadGroup.EnableLs = acs.Download.Ls
-	downloadGroup.EnableZip = acs.Download.Zip
-	downloadGroup.EnableDownloadCode = acs.Download.DownloadCode
-	uploadGroup.Enable = acs.Upload.Enable
-	viewGroup.EnableChatBoard = acs.View.ChatBoard
-	viewGroup.Enable = acs.View.Enable
-	log_file_enable = acs.Security.Log
-	login.enable = acs.Security.Login.Enable
-	login.account = acs.Security.Login.Account
-	login.password = acs.Security.Login.Password
-	if acs.Ip != "" {
-		ip = acs.Ip
-	}
-	if acs.Port != "" {
-		port = acs.Port
-	}
-	if len(acs.Security.Https) > 0 {
-		if len(acs.Security.Https) == 2 {
-			https_enable = true
-			pem_file = acs.Security.Https[0]
-			key_file = acs.Security.Https[1]
-		} else {
-			fmt.Println("config File:\nhttps args nums error.")
-		}
-	}
-	fmt.Printf("download:%+v, upload:%+v, view:%+v, \nsecurity:%+v\n",
-		acs.Download, acs.Upload, acs.View, acs.Security)
+	fmt.Printf("%+v\n\n", acs)
 }
 
 func routerGroup_init(r *gin.Engine) {
@@ -182,18 +150,17 @@ func parseArgs() {
 		os.Exit(0)
 		return nil
 	})
-	flag.BoolVar(&downloadGroup.EnableLs, "ls", false, "enable ls mode")
-	flag.StringVar(&ip, "ip", "0.0.0.0", "set the ip listen")
-	flag.StringVar(&port, "port", "5000", "set the port listen")
-	flag.BoolVar(&uploadGroup.Enable, "upload", false, "enable upload mode")
-	flag.BoolVar(&downloadGroup.EnableZip, "zip", false, "enable zip mode")
-	flag.BoolVar(&downloadGroup.EnableDownloadCode, "dC", false, "enable download_code mode")
-	flag.BoolVar(&viewGroup.Enable, "view", false, "enable view mode")
-	flag.BoolVar(&viewGroup.EnableChatBoard, "chatBoard", false, "enable chatBoard mode")
-	flag.Func("log", "enable log writing to file", func(s string) error {
-		log_file_enable = true
-		return nil
-	})
+	flag.BoolVar(&downloadGroup.Args.Ls, "ls", false, "enable ls mode")
+	flag.StringVar(&Args.Ip, "ip", "0.0.0.0", "set the ip listen")
+	flag.StringVar(&Args.Port, "port", "5000", "set the port listen")
+	flag.BoolVar(&uploadGroup.Args.Enable, "upload", false, "enable upload mode")
+	flag.BoolVar(&uploadGroup.Args.UploadText, "uT", false, "enable upload text mode")
+	flag.BoolVar(&uploadGroup.Args.SecureExt, "secureExt", false, "set secureExt mode(default: true)")
+	flag.BoolVar(&downloadGroup.Args.Zip, "zip", false, "enable zip mode")
+	flag.BoolVar(&downloadGroup.Args.DownloadCode, "dC", false, "enable download_code mode")
+	flag.BoolVar(&viewGroup.Args.Enable, "view", false, "enable view mode")
+	flag.BoolVar(&viewGroup.Args.ChatBoard, "chatBoard", false, "enable chatBoard mode")
+	flag.BoolVar(&Args.Security.Log, "log", false, "enable log writing to file")
 	flag.StringVar(&httpsArg, "https", "", "use HTTPS with cer and key\nexample: \"cer.cer key.pvk\"")
 	flag.Func("RFN", "restore files' name", func(s string) error {
 		restoreFileName()
@@ -208,19 +175,19 @@ func parseArgs() {
 	flag.Parse()
 	if httpsArg != "" {
 		https := strings.Split(httpsArg, " ")
-		https_enable = true
-		pem_file, key_file = https[0], https[1]
+		Args.Security.Https.Enable = true
+		Args.Security.Https.KeyFiles[0], Args.Security.Https.KeyFiles[1] = https[0], https[1]
 	}
 	if loginArg != "" {
 		fmt.Printf("login [%s]\n", loginArg)
 		loginArgs := strings.Split(loginArg, ":")
-		login.enable = true
-		login.account, login.password = loginArgs[0], loginArgs[1]
+		Args.Security.Login.Enable = true
+		Args.Security.Login.Account, Args.Security.Login.Password = loginArgs[0], loginArgs[1]
 	}
 }
 
 func router_init(r *gin.Engine) {
-	if login.enable {
-		r.Use(gin.BasicAuth(gin.Accounts{login.account: login.password}))
+	if Args.Security.Login.Enable {
+		r.Use(gin.BasicAuth(gin.Accounts{Args.Security.Login.Account: Args.Security.Login.Password}))
 	}
 }
