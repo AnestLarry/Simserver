@@ -19,10 +19,10 @@ import (
 )
 
 var (
-	log_file_open = false
-	https_open    = false
-	login         = struct {
-		open     bool
+	log_file_enable = false
+	https_enable    = false
+	login           = struct {
+		enable   bool
 		account  string
 		password string
 	}{}
@@ -71,13 +71,30 @@ func main() {
 			c.JSON(200, gin.H{"message": `It's a file downloadGroup server. You can transfer the file with the machine.`})
 		})
 	}
+	if log_file_enable {
+		gin.DisableConsoleColor()
+		var f *os.File
+		var err error
+		if !Libs.LibsXExists("ftps.log") {
+			f, err = os.Create("ftps.log")
+			if err != nil {
+				panic(err)
+			}
+		} else if Libs.LibsXIsFile("ftps.log") {
+			f, err = os.OpenFile("ftps.log", os.O_APPEND, os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
+		}
+		gin.DefaultWriter = io.MultiWriter(f)
+	}
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "404 Not Found"})
 	})
 	routerGroup_init(r)
 	fmt.Printf("%s\n%s:%s\n", strings.Repeat("-", 15), ip, port)
 	var err error
-	if https_open {
+	if https_enable {
 		err = r.RunTLS(fmt.Sprintf("%s:%s", ip, port), pem_file, key_file)
 	} else {
 		err = r.Run(fmt.Sprintf("%s:%s", ip, port))
@@ -94,8 +111,8 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	uploadGroup.Enable = acs.Upload.Enable
 	viewGroup.EnableChatBoard = acs.View.ChatBoard
 	viewGroup.Enable = acs.View.Enable
-	log_file_open = acs.Security.Log
-	login.open = acs.Security.Login.Enable
+	log_file_enable = acs.Security.Log
+	login.enable = acs.Security.Login.Enable
 	login.account = acs.Security.Login.Account
 	login.password = acs.Security.Login.Password
 	if acs.Ip != "" {
@@ -106,7 +123,7 @@ func loadConfigFromArgsConfigStruct(acs argsConfig.ArgConfigStruct) {
 	}
 	if len(acs.Security.Https) > 0 {
 		if len(acs.Security.Https) == 2 {
-			https_open = true
+			https_enable = true
 			pem_file = acs.Security.Https[0]
 			key_file = acs.Security.Https[1]
 		} else {
@@ -165,31 +182,16 @@ func parseArgs() {
 		os.Exit(0)
 		return nil
 	})
-	flag.BoolVar(&downloadGroup.EnableLs, "ls", false, "open ls mode")
+	flag.BoolVar(&downloadGroup.EnableLs, "ls", false, "enable ls mode")
 	flag.StringVar(&ip, "ip", "0.0.0.0", "set the ip listen")
 	flag.StringVar(&port, "port", "5000", "set the port listen")
-	flag.BoolVar(&uploadGroup.Enable, "upload", false, "open upload mode")
-	flag.BoolVar(&downloadGroup.EnableZip, "zip", false, "open zip mode")
-	flag.BoolVar(&downloadGroup.EnableDownloadCode, "dC", false, "open download_code mode")
-	flag.BoolVar(&viewGroup.Enable, "view", false, "open view mode")
-	flag.BoolVar(&viewGroup.EnableChatBoard, "chatBoard", false, "open chatBoard mode")
-	flag.Func("log", "open log file", func(s string) error {
-		log_file_open = true
-		gin.DisableConsoleColor()
-		var f *os.File
-		var err error
-		if !Libs.LibsXExists("ftps.log") {
-			f, err = os.Create("ftps.log")
-			if err != nil {
-				panic(err)
-			}
-		} else if Libs.LibsXIsFile("ftps.log") {
-			f, err = os.OpenFile("ftps.log", os.O_APPEND, os.ModePerm)
-			if err != nil {
-				panic(err)
-			}
-		}
-		gin.DefaultWriter = io.MultiWriter(f)
+	flag.BoolVar(&uploadGroup.Enable, "upload", false, "enable upload mode")
+	flag.BoolVar(&downloadGroup.EnableZip, "zip", false, "enable zip mode")
+	flag.BoolVar(&downloadGroup.EnableDownloadCode, "dC", false, "enable download_code mode")
+	flag.BoolVar(&viewGroup.Enable, "view", false, "enable view mode")
+	flag.BoolVar(&viewGroup.EnableChatBoard, "chatBoard", false, "enable chatBoard mode")
+	flag.Func("log", "enable log writing to file", func(s string) error {
+		log_file_enable = true
 		return nil
 	})
 	flag.StringVar(&httpsArg, "https", "", "use HTTPS with cer and key\nexample: \"cer.cer key.pvk\"")
@@ -206,19 +208,19 @@ func parseArgs() {
 	flag.Parse()
 	if httpsArg != "" {
 		https := strings.Split(httpsArg, " ")
-		https_open = true
+		https_enable = true
 		pem_file, key_file = https[0], https[1]
 	}
 	if loginArg != "" {
 		fmt.Printf("login [%s]\n", loginArg)
 		loginArgs := strings.Split(loginArg, ":")
-		login.open = true
+		login.enable = true
 		login.account, login.password = loginArgs[0], loginArgs[1]
 	}
 }
 
 func router_init(r *gin.Engine) {
-	if login.open {
+	if login.enable {
 		r.Use(gin.BasicAuth(gin.Accounts{login.account: login.password}))
 	}
 }
