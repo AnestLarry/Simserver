@@ -14,8 +14,9 @@ type downloadArgConfigStruct struct {
 	DownloadCode bool `json:"downloadCode"`
 }
 type uploadArgConfigStruct struct {
-	Enable    bool `json:"enable"`
-	SecureExt bool `json:"secureExt"`
+	Enable     bool `json:"enable"`
+	UploadText bool `json:"uploadText"`
+	SecureExt  bool `json:"secureExt"`
 }
 type securityLoginArgConfigStruct struct {
 	Enable   bool   `json:"enable"`
@@ -23,9 +24,13 @@ type securityLoginArgConfigStruct struct {
 	Password string `json:"password"`
 }
 type securityArgConfigStruct struct {
-	Https []string                     `json:"https"`
+	Https httpsArgConfigStruct         `json:"https"`
 	Log   bool                         `json:"log"`
 	Login securityLoginArgConfigStruct `json:"login"`
+}
+type httpsArgConfigStruct struct {
+	Enable   bool     `json:"enable"`
+	KeyFiles []string `json:"keyFiles"`
 }
 type viewArgConfigStruct struct {
 	Enable    bool `json:"enable"`
@@ -48,12 +53,16 @@ var (
 			DownloadCode: false,
 		},
 		Upload: uploadArgConfigStruct{
-			Enable:    false,
-			SecureExt: true,
+			Enable:     false,
+			UploadText: true,
+			SecureExt:  true,
 		},
 		Security: securityArgConfigStruct{
-			Https: []string{},
-			Log:   false,
+			Https: httpsArgConfigStruct{
+				Enable:   false,
+				KeyFiles: []string{""},
+			},
+			Log: false,
 			Login: securityLoginArgConfigStruct{
 				Enable:   false,
 				Account:  "",
@@ -99,5 +108,9 @@ func ArgConfigInit() ArgConfigStruct {
 	sync.OnceFunc(func() {
 		loadConfig()
 	})()
+	return acs
+}
+
+func GetConfig() ArgConfigStruct {
 	return acs
 }

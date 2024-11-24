@@ -1,21 +1,22 @@
 package viewGroup
 
 import (
+	argsConfig "Simserver/config"
 	"embed"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io/fs"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
-	Enable          = false
-	EnableChatBoard = false
+	Args = argsConfig.GetConfig().View
 )
 
 func view_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !Enable {
+		if !Args.Enable {
 			c.JSON(500, gin.H{"message": "The server is not supported \"view\""})
 			c.Abort()
 		}
