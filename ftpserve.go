@@ -20,7 +20,7 @@ import (
 
 var (
 	Args    = argsConfig.GetConfig()
-	Version = "Aut, 2024"
+	Version = "Win, 2024"
 )
 
 var (
