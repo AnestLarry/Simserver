@@ -2,8 +2,10 @@ package uploadGroup
 
 import (
 	"Simserver/Libs"
-	"Simserver/config"
+	argsConfig "Simserver/config"
+	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -12,13 +14,12 @@ import (
 )
 
 var (
-	Enable = false
-	acs    = argsConfig.ArgConfigInit()
+	Args = argsConfig.GetConfig().Upload
 )
 
 func upload_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pathDict := map[string]bool{"/api/upload/": Enable, "/api/upload/text": Enable}
+		pathDict := map[string]bool{"/api/upload/": Args.Enable, "/api/upload/text": Args.UploadText}
 		v, ok := pathDict[c.FullPath()]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})
@@ -32,27 +33,32 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.Engine) {
 	routerApi.Use(upload_middleware())
 
 	routerApi.POST("/", func(c *gin.Context) {
-		form, err := c.MultipartForm()
-		if err != nil {
-			c.JSON(500, gin.H{"message": "got file error."})
+		folder := fmt.Sprintf("upload/from_%s_", strings.ReplaceAll(c.ClientIP(), ".", "_"))
+		if !Libs.LibsXExists(folder) {
+			os.MkdirAll(folder, 0664)
 		}
-		files := form.File["files"]
-		for _, file := range files {
-			if !Libs.LibsXExists("upload") {
-				os.Mkdir("upload", 0764)
-			}
-			folder := fmt.Sprintf("upload/from_%s_", strings.ReplaceAll(c.ClientIP(), ".", "_"))
-			if !Libs.LibsXExists(folder) {
-				os.Mkdir(folder, 0764)
-			}
-			if acs.Upload.SecureExt {
-				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s_dat", folder, file.Filename))
-			} else {
-				c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", folder, file.Filename))
-			}
-		}
-		c.JSON(200, gin.H{"message": "OK"})
 
+		x_file_name := c.Request.Header.Get("x-file-name")
+		if len(x_file_name) == 0 {
+			c.JSON(500, gin.H{"message": "Get file name failed"})
+			return
+		}
+		x_file_name_byte, err := base64.StdEncoding.DecodeString(x_file_name)
+		x_file_name = string(x_file_name_byte)
+		if err != nil {
+			c.JSON(500, gin.H{"message": "Decode file name failed"})
+			return
+		}
+		destFileName := fmt.Sprintf("%s/%s", folder, x_file_name)
+		if Args.SecureExt {
+			destFileName = fmt.Sprintf("%s/%s_dat", folder, x_file_name)
+		}
+		errMsg, err := streamToFile(&c.Request.Body, destFileName)
+		if err != nil {
+			c.JSON(500, errMsg)
+			return
+		}
+		c.JSON(200, gin.H{"message": "Upload success"})
 	})
 
 	routerApi.POST("/text", func(c *gin.Context) {
@@ -73,4 +79,20 @@ func Upload_routerGroup_init(Uploader_routerGroup *gin.Engine) {
 		}
 		c.JSON(200, gin.H{"message": "OK"})
 	})
+}
+
+func streamToFile(fileHeader *io.ReadCloser, destPath string) (string, error) {
+
+	out, err := os.Create(destPath)
+	if err != nil {
+		return fmt.Sprintf("Created target file error: %v", err), err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, *fileHeader)
+	if err != nil {
+		return fmt.Sprintf("Writed target file error: %v", err), err
+	}
+
+	return "", nil
 }

@@ -3,11 +3,12 @@ package viewGroup
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 type ChatRoom struct {
@@ -28,7 +29,7 @@ type BroadcastMessage struct {
 
 func chatBoard_middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pathDict := map[string]bool{"/api/view/chatBoard/chat": EnableChatBoard, "/api/view/chatBoard/health": EnableChatBoard}
+		pathDict := map[string]bool{"/api/view/chatBoard/chat": Args.ChatBoard, "/api/view/chatBoard/health": Args.ChatBoard}
 		v, ok := pathDict[c.FullPath()]
 		if !ok || !v {
 			c.JSON(501, gin.H{"message": fmt.Sprintf("The server is not supported \"%s\"", c.FullPath())})

@@ -1,25 +1,49 @@
 <script lang="ts">
-  let files: FileList;
+  let selectedFile: FileList;
   let progress = 0;
 
   function handleSubmit(e: Event) {
     e.preventDefault();
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
+    if (selectedFile === null || selectedFile.length === 0) {
+      alert("Please select a file.");
+      return;
     }
+    const formData = new FormData();
+    formData.append("file", selectedFile[0]);
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/upload/");
+    console.log(selectedFile[0].name);
+    xhr.setRequestHeader("x-file-name", encodeBase64(selectedFile[0].name));
     xhr.upload.addEventListener("progress", (e) => {
       progress = (e.loaded / e.total) * 100;
     });
+    xhr.onloadend = (e) => {
+      console.log(e);
+      alert("Upload completed.")
+    }
+    xhr.onabort = (e) => {
+      console.error(e);
+      alert("Upload aborted.");
+    }
+    xhr.onerror = (e) => {
+      console.error(e);
+      alert("Upload failed.");
+    }
     xhr.send(formData);
+  }
+  function encodeBase64(str: string): string {
+    return btoa(
+      encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) =>
+        // @ts-ignore
+        String.fromCharCode("0x" + p1)
+      )
+    );
   }
 </script>
 
 <div id="panel">
   <form on:submit={handleSubmit}>
-    Files: <input type="file" bind:files multiple /><br /><br />
+    Files: <input type="file" bind:files={selectedFile} /><br /><br />
     <span>Progress: </span><progress value={progress} max="100"></progress><br
     />
     <input type="submit" value="Submit" />
