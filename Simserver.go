@@ -19,6 +19,10 @@ import (
 )
 
 var (
+	goVersion string
+	gitHash   string
+	buildTime string
+
 	Args    = argsConfig.GetConfig()
 	Version = "Win, 2024"
 )
@@ -146,7 +150,7 @@ func parseArgs() {
 	httpsArg := ""
 	loginArg := ""
 	flag.Func("version", "show the version", func(s string) error {
-		fmt.Println(Version)
+		fmt.Printf("goVerion: %s\ngitHash: %s\nbuildTime: %s\nversion: %s\n", goVersion, gitHash, buildTime, Version)
 		os.Exit(0)
 		return nil
 	})
