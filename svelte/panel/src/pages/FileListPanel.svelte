@@ -59,13 +59,36 @@
       panel.pushUrlStack(item.Name);
     },
     fileCallback: (item: LSItem) => {
-      const url =
+      const url = 
         panel.baseUrl +
         "/api/dl/n/" +
         (flpc.urlStack.length == 1 && flpc.urlStack[0] === "/"
           ? "/" + item.Name
           : flpc.urlStack.join("/") + "/" + item.Name);
       window.open(url, "_blank");
+    },
+    fileDownloadCallback: (item: LSItem) => {
+      const url = 
+        panel.baseUrl +
+        "/api/dl/n/" +
+        (flpc.urlStack.length == 1 && flpc.urlStack[0] === "/"
+          ? "/" + item.Name
+          : flpc.urlStack.join("/") + "/" + item.Name);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.Name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    },
+    fileCopyCallback: (item: LSItem) => {
+      const url = 
+        panel.baseUrl +
+        "/api/dl/n/" +
+        (flpc.urlStack.length == 1 && flpc.urlStack[0] === "/"
+          ? "/" + item.Name
+          : flpc.urlStack.join("/") + "/" + item.Name);
+      navigator.clipboard.writeText(url);
     },
     filterCallback: (list: LSItem[]): LSItem[] => {
       return list.filter((x) => x.Name.indexOf(flpc.filterCond) > -1);
@@ -85,6 +108,7 @@
           list={flpc.folderListFiltered()}
           callback={callbacks.folderCallback}
           showSize={false}
+          isFile={false}
         />
       </Toggleable>
     </div>
@@ -100,6 +124,13 @@
           list={flpc.fileListFiltered()}
           showSize={true}
           callback={callbacks.fileCallback}
+          isFile={true}
+          on:download={(e) => {
+            callbacks.fileDownloadCallback(e.detail);
+          }}
+          on:copy={(e) => {
+            callbacks.fileCopyCallback(e.detail);
+          }}
         />
       </Toggleable>
     </div>
