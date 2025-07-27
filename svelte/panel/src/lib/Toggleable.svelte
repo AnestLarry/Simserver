@@ -1,7 +1,7 @@
 <script>
-  export let visible;
+  let { visible, children } = $props();
 </script>
 
 {#if visible}
-  <slot />
+  {@render children?.()}
 {/if}

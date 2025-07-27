@@ -9,28 +9,40 @@ export const http = {
 export const client = {
   ImgList: (url: string, prefix: string) => {
     const imgExts = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "avif", "heif", "svg"];
-    var data: LSResponse = JSON.parse(http.Get(url));
-    if (data["fileList"] === null) {
+    try {
+      var response = http.Get(url);
+      var data: LSResponse = JSON.parse(response);
+      if (data["fileList"] === null) {
+        return [];
+      }
+      var resList: LSItem[] = [];
+      data["fileList"].sort(client.sortFunction("NameLenOrder"));
+      data["fileList"].filter(x => {
+        return imgExts.filter(e => x.Name.toLowerCase().endsWith(e)).length > 0 ? x : null;
+      }).forEach(x => {
+        var i = x;
+        i.Name = prefix + i.Name;
+        resList.push(i);
+      });
+      return resList;
+    } catch (error) {
+      console.warn("ImgList API call failed (ls feature may be disabled):", error);
       return [];
     }
-    var resList: LSItem[] = [];
-    data["fileList"].sort(client.sortFunction("NameLenOrder"));
-    data["fileList"].filter(x => {
-      return imgExts.filter(e => x.Name.toLowerCase().endsWith(e)).length > 0 ? x : null;
-    }).forEach(x => {
-      var i = x;
-      i.Name = prefix + i.Name;
-      resList.push(i);
-    });
-    return resList;
   },
   FolderList: (url: string) => {
-    var data: LSResponse = JSON.parse(http.Get(url));
-    if (data["folderList"] === null) {
+    try {
+      var response = http.Get(url);
+      var data: LSResponse = JSON.parse(response);
+      if (data["folderList"] === null) {
+        return [];
+      }
+      data["folderList"].sort(client.sortFunction("NameOrder"));
+      return data["folderList"];
+    } catch (error) {
+      console.warn("FolderList API call failed (ls feature may be disabled):", error);
       return [];
     }
-    data["folderList"].sort(client.sortFunction("NameOrder"));
-    return data["folderList"];
   },
   sortFunction: (x: string) => {
 
