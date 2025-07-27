@@ -60,6 +60,17 @@ func main() {
 	r.GET("/version", func(c *gin.Context) {
 		c.JSON(200, gin.H{"version": Version})
 	})
+	r.GET("/api/features", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"ls":           downloadGroup.Args.Ls,
+			"upload":       uploadGroup.Args.Enable,
+			"uploadText":   uploadGroup.Args.UploadText,
+			"zip":          downloadGroup.Args.Zip,
+			"downloadCode": downloadGroup.Args.DownloadCode,
+			"view":         viewGroup.Args.Enable,
+			"chatBoard":    viewGroup.Args.ChatBoard,
+		})
+	})
 	if viewGroup.Args.Enable {
 		r.GET("/", func(c *gin.Context) {
 			c.Redirect(http.StatusPermanentRedirect, "/view/")
