@@ -24,7 +24,7 @@ var (
 	buildTime string
 
 	Args    = argsConfig.GetConfig()
-	Version = "Win, 2024"
+	Version = "Sum, 2025"
 )
 
 var (
