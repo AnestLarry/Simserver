@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { t, setLocale, getCurrentLocale } from '$lib/i18n/i18n.svelte'
   let selectedFile: FileList = $state();
   let progress = $state(0);
 
   function handleSubmit(e: Event) {
     e.preventDefault();
     if (selectedFile === null || selectedFile.length === 0) {
-      alert("Please select a file.");
+      alert(t('upload.alertSelectFile'));
       return;
     }
     const formData = new FormData();
@@ -19,15 +20,15 @@
     });
     xhr.onloadend = (e) => {
       console.log(e);
-      alert("Upload completed.")
+      alert(t('upload.alertCompleted'))
     }
     xhr.onabort = (e) => {
       console.error(e);
-      alert("Upload aborted.");
+      alert(t('upload.alertAborted'));
     }
     xhr.onerror = (e) => {
       console.error(e);
-      alert("Upload failed.");
+      alert(t('upload.alertFailed'));
     }
     xhr.send(formData);
   }
@@ -47,7 +48,7 @@
       <svg class="w-6 h-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
       </svg>
-      File Upload
+      {t('upload.fileUpload')}
     </h2>
     
     <form onsubmit={handleSubmit} class="space-y-6">
@@ -56,7 +57,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
         </svg>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="file-upload">
-          Choose File to Upload
+          {t('upload.chooseFile')}
         </label>
         <input 
           id="file-upload"
@@ -66,7 +67,7 @@
         />
         {#if selectedFile && selectedFile.length > 0}
           <p class="mt-2 text-sm text-green-600 dark:text-green-400">
-            Selected: {selectedFile[0].name}
+            {t('upload.selected')} {selectedFile[0].name}
           </p>
         {/if}
       </div>
@@ -74,7 +75,7 @@
       {#if progress > 0}
         <div class="space-y-2">
           <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-            <span>Upload Progress</span>
+            <span>{t('upload.progress')}</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
@@ -91,7 +92,7 @@
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
         </svg>
-        Upload File
+        {t('upload.uploadFile')}
       </button>
     </form>
   </div>
@@ -101,20 +102,20 @@
       <svg class="w-6 h-6 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
       </svg>
-      Text Upload
+      {t('upload.textUpload')}
     </h2>
     
     <form action="/api/upload/text" method="post" enctype="multipart/form-data" class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="text-upload">
-          Enter your text content:
+          {t('upload.enterText')}
         </label>
         <textarea 
           id="text-upload"
           name="text" 
           rows="8"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
-          placeholder="Type or paste your text here..."
+          placeholder={t('upload.textPlaceholder')}
         ></textarea>
       </div>
       <button 
@@ -124,7 +125,7 @@
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
         </svg>
-        Upload Text
+        {t('upload.uploadText')}
       </button>
     </form>
   </div>

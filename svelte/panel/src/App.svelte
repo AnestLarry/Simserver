@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t, setLocale, getCurrentLocale } from '$lib/i18n/i18n.svelte'
   import PhotoPanel from "./pages/PhotoPanel.svelte";
   import FileListPanel from "./pages/FileListPanel.svelte";
   import ChatBoard from "./pages/ChatBoard.svelte";
@@ -105,7 +106,16 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
   <div class="container mx-auto px-4 py-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">File Manager</h1>
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{t('app.title')}</h1>
+        <select
+          onchange={(e) => setLocale(e.target.value)}
+          class="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+        >
+          <option value="en" selected={getCurrentLocale() === 'en'}>English</option>
+          <option value="zh-CN" selected={getCurrentLocale() === 'zh-CN'}>中文</option>
+        </select>
+      </div>
       <div class="flex gap-4 mb-6">
         <div class="flex-1">
           <Input
@@ -116,7 +126,7 @@
             onblur={() => {
               updateWorkUrl(true);
             }}
-            placeholder="Enter path..."
+            placeholder={t('app.enterPath')}
             class="w-full"
           />
         </div>
@@ -132,7 +142,7 @@
           <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={panel.hiddenPanel ? "M19 9l-7 7-7-7" : "M9 5l7 7-7 7"}></path>
           </svg>
-          {panel.hiddenPanel ? 'Hide' : 'Show'} Panel
+          {panel.hiddenPanel ? t('app.hidePanel') : t('app.showPanel')}
         </Button>
       </div>
       <Toggleable visible={panel.hiddenPanel}>
@@ -150,7 +160,7 @@
                 <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Back
+                {t('common.back')}
               </Button>
               <Button
                 variant="default"
@@ -166,20 +176,20 @@
                 <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                Download
+                {t('common.download')}
               </Button>
             </div>
             
             <div class="flex items-center gap-2">
               <Label class="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                Page Mode:
+                {t('app.pageMode')}
               </Label>
               <Select
                 items={[
-                  { value: "List", name: "📁 List View" },
-                  { value: "Photo", name: "🖼️ Photo Gallery" },
-                  { value: "ChatBoard", name: "💬 Chat Board" },
-                  { value: "Upload", name: "📤 Upload Files" },
+                  { value: "List", name: t('app.listView') },
+                  { value: "Photo", name: t('app.photoGallery') },
+                  { value: "ChatBoard", name: t('app.chatBoard') },
+                  { value: "Upload", name: t('app.uploadFiles') },
                 ]}
                 bind:value={panel.pageMode}
                 class="min-w-40"
@@ -192,14 +202,14 @@
               <Card class="p-4">
                 <CardContent class="p-0">
                   <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                    Sort By
+                    {t('app.sortBy')}
                   </Label>
                   <Select
                     items={[
-                      { value: "NameOrder", name: "Name (A-Z)" },
-                      { value: "NameReverse", name: "Name (Z-A)" },
-                      { value: "TimeOrder", name: "Date (Oldest)" },
-                      { value: "TimeReverse", name: "Date (Newest)" },
+                      { value: "NameOrder", name: t('app.sortNameAZ') },
+                      { value: "NameReverse", name: t('app.sortNameZA') },
+                      { value: "TimeOrder", name: t('app.sortDateOldest') },
+                      { value: "TimeReverse", name: t('app.sortDateNewest') },
                     ]}
                     bind:value={panel.sortedBy}
                     onchange={() => {
@@ -212,7 +222,7 @@
             {:else if panel.pageMode === "Photo"}
               <Card class="p-4 md:col-span-2 lg:col-span-1">
                 <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                  Photo Mode
+                  {t('app.photoMode')}
                 </Label>
                 <div class="space-y-2 mb-4">
                   <label class="flex items-center space-x-2">
@@ -231,7 +241,7 @@
                       }}
                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Show All Images</span>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{t('app.showAllImages')}</span>
                   </label>
                   <label class="flex items-center space-x-2">
                     <input
@@ -249,7 +259,7 @@
                       }}
                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Include Subfolders</span>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{t('app.includeSubfolders')}</span>
                   </label>
                 </div>
                 <Button
@@ -263,16 +273,16 @@
                   <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                   </svg>
-                  Image List
+                  {t('app.imageList')}
                 </Button>
               </Card>
               
               <Card class="p-4 md:col-span-2">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Image Size Controls</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('app.imageSizeControls')}</h3>
                 <div class="space-y-4">
                   <div>
                     <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                      Width: {panel.photo.sizeRange.widthRange}%
+                      {t('app.width')} {panel.photo.sizeRange.widthRange}%
                     </Label>
                     <input
                       type="range"
@@ -285,7 +295,7 @@
                   </div>
                   <div>
                     <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                      Height: {panel.photo.sizeRange.heightRange}%
+                      {t('app.height')} {panel.photo.sizeRange.heightRange}%
                     </Label>
                     <input
                       type="range"
@@ -306,7 +316,7 @@
                       class="flex-1 hover:bg-green-700 transition-colors"
                       size="sm"
                     >
-                      Reset
+                      {t('common.reset')}
                     </Button>
                     <Button
                       variant={panel.photo.sizeRange.isApply ? "default" : "outline"}
@@ -316,7 +326,7 @@
                       class="flex-1 transition-colors {panel.photo.sizeRange.isApply ? 'hover:bg-blue-700' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}"
                       size="sm"
                     >
-                      {panel.photo.sizeRange.isApply ? "Applied" : "Apply"}
+                      {panel.photo.sizeRange.isApply ? t('common.applied') : t('common.apply')}
                     </Button>
                   </div>
                 </div>

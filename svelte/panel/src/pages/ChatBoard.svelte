@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t, setLocale, getCurrentLocale } from '$lib/i18n/i18n.svelte'
   import Button from "../lib/components/ui/button.svelte";
   import Input from "../lib/components/ui/input.svelte";
   import Card from "../lib/components/ui/card.svelte";
@@ -100,11 +101,11 @@
 <div class="space-y-6">
   <Card class="p-4">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Chat Board</h2>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">{t('chat.title')}</h2>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-600 dark:text-gray-400">Status:</span>
+        <span class="text-sm text-gray-600 dark:text-gray-400">{t('chat.status')}</span>
         {#if wsStatus === "Connected"}
-          <Button variant="secondary" class="bg-green-600 hover:bg-green-700 text-white rounded-full px-3 py-1 text-xs">Connected</Button>
+          <Button variant="secondary" class="bg-green-600 hover:bg-green-700 text-white rounded-full px-3 py-1 text-xs">{t('chat.connected')}</Button>
         {:else}
           <Button variant="destructive" class="rounded-full px-3 py-1 text-xs" onclick={connect}>{wsStatus}</Button>
         {/if}
@@ -113,22 +114,22 @@
     
     <div class="space-y-4">
       <div>
-        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Username</Label>
+        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">{t('chat.username')}</Label>
         <Input 
           type="text" 
           bind:value={username} 
-          placeholder="Enter your username" 
+          placeholder={t('chat.usernamePlaceholder')} 
           disabled={wsStatus !== "Connected"}
           class="w-full"
         />
       </div>
       
       <div>
-        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Message</Label>
+        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">{t('chat.message')}</Label>
         <Textarea
           bind:value={message}
           onkeydown={handleKeydown}
-          placeholder="Type your message here..."
+          placeholder={t('chat.messagePlaceholder')}
           disabled={wsStatus !== "Connected"}
           class="w-full min-h-24 resize-none"
         />
@@ -143,7 +144,7 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
           </svg>
-          Send
+          {t('chat.send')}
         </Button>
         <Button 
           variant="outline" 
@@ -154,7 +155,7 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
           </svg>
-          Clear
+          {t('chat.clear')}
         </Button>
       </div>
     </div>
@@ -167,7 +168,7 @@
       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
       </svg>
-      Messages ({messages.length})
+      {t('chat.messages', { count: messages.length })}
     </h3>
     <div class="space-y-4 max-h-96 overflow-y-auto">
       {#each messages as msg}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t, setLocale, getCurrentLocale } from '$lib/i18n/i18n.svelte'
   import Card from "./components/ui/card.svelte";
   import CardContent from "./components/ui/card-content.svelte";
   import Button from "./components/ui/button.svelte";
@@ -28,7 +29,7 @@
     let r = [n.toFixed(2), "MB"];
     if (n < 1 || n > 1024) {
       r =
-        n < 1 ? [(n * 1024).toFixed(2), " KB"] : [(n / 1024).toFixed(2), "GB"];
+        n < 1 ? [(n * 1024).toFixed(2), t('common.kb')] : [(n / 1024).toFixed(2), t('common.gb')];
     }
     return r.join(" ");
   }
@@ -106,14 +107,14 @@
               callback(LSItem);
             }}
             class="flex-1 hover:bg-blue-700 transition-colors text-xs py-1.5 min-w-0"
-            title="View file"
+            title={t('common.view')}
           >
             <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
             </svg>
             {#if showButtonText}
-              <span class="ml-1 truncate">View</span>
+              <span class="ml-1 truncate">{t('common.view')}</span>
             {/if}
           </Button>
           <Button 
@@ -124,13 +125,13 @@
               download(LSItem);
             }}
             class="flex-1 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-xs py-1.5 min-w-0"
-            title="Download file"
+            title={t('common.download')}
           >
             <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             {#if showButtonText}
-              <span class="ml-1 truncate">Download</span>
+              <span class="ml-1 truncate">{t('common.download')}</span>
             {/if}
           </Button>
           <Button 
@@ -141,13 +142,13 @@
               copy(LSItem);
             }}
             class="flex-1 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-xs py-1.5 min-w-0"
-            title="Copy link"
+            title={t('common.copy')}
           >
             <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
             {#if showButtonText}
-              <span class="ml-1 truncate">Copy</span>
+              <span class="ml-1 truncate">{t('common.copy')}</span>
             {/if}
           </Button>
         </div>

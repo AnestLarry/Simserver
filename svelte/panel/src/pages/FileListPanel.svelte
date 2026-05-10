@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t, setLocale, getCurrentLocale } from '$lib/i18n/i18n.svelte'
   import FileCardList from "../lib/FileCardList.svelte";
   import Toggleable from "../lib/Toggleable.svelte";
   import { client, http } from "../utils";
@@ -115,25 +116,25 @@
   <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
     <div class="flex flex-wrap gap-4 items-center">
       <div class="flex-1 min-w-64">
-        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Filter by name</Label>
+        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">{t('fileList.filterByName')}</Label>
         <Input
           bind:value={flpc.filterCond}
-          placeholder="Search files and folders..."
+          placeholder={t('fileList.searchPlaceholder')}
           class="w-full"
         />
       </div>
       
       <div>
-        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Columns</Label>
+        <Label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">{t('fileList.columns')}</Label>
         <select
           bind:value={flpc.columnCount}
           class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="1">1 Column</option>
-          <option value="2">2 Columns</option>
-          <option value="3">3 Columns</option>
-          <option value="4">4 Columns</option>
-          <option value="5">5 Columns</option>
+          <option value="1">{t('fileList.oneColumn')}</option>
+          <option value="2">{t('fileList.xColumns', { count: 2 })}</option>
+          <option value="3">{t('fileList.xColumns', { count: 3 })}</option>
+          <option value="4">{t('fileList.xColumns', { count: 4 })}</option>
+          <option value="5">{t('fileList.xColumns', { count: 5 })}</option>
         </select>
       </div>
     </div>
@@ -151,7 +152,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
                 </svg>
               </div>
-              Folders
+              {t('fileList.folders')}
               <span class="ml-2 px-2 py-1 bg-blue-500 text-white text-sm rounded-full">{flpc.folderListFiltered().length}</span>
             </h2>
             <Button
@@ -198,7 +199,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
               </div>
-              Files
+              {t('fileList.files')}
               <span class="ml-2 px-2 py-1 bg-green-500 text-white text-sm rounded-full">{flpc.fileListFiltered().length}</span>
             </h2>
             <Button
