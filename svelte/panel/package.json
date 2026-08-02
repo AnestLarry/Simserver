@@ -14,7 +14,7 @@
     "@tailwindcss/postcss": "^4.1.11",
     "@tsconfig/svelte": "^5.0.4",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.25",
     "postcss-load-config": "^6.0.1",
     "svelte": "^5.55.7",
     "svelte-check": "^4.3.0",
